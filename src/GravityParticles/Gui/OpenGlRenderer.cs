@@ -167,17 +167,20 @@ namespace GravityParticles.Gui
                 return;
  
             this.scene = scene;
-            if (pointsCount == 0 || pointsCount != scene.shaderConfig.particleCount + scene.shaderConfig.massCount)
-                SetupBuffers();
+            lock (scene)
+            {
+                if (pointsCount == 0 || pointsCount != scene.shaderConfig.particleCount + scene.shaderConfig.massCount)
+                    SetupBuffers();
 
-            //upload config
-            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
-            GL.BufferSubData(
-                BufferTarget.ShaderStorageBuffer,
-                IntPtr.Zero,
-                Marshal.SizeOf<ComputeShaderConfig>(),
-                ref scene.shaderConfig
-            );
+                //upload config
+                GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
+                GL.BufferSubData(
+                    BufferTarget.ShaderStorageBuffer,
+                    IntPtr.Zero,
+                    Marshal.SizeOf<ComputeShaderConfig>(),
+                    ref scene.shaderConfig
+                );
+            }
 
             //compute
             GL.UseProgram(computeProgram);

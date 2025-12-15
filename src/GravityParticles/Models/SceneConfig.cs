@@ -52,11 +52,11 @@ namespace GravityParticles.Models
 
         private void SetupParticle(Particle[] buffer, int idx)
         {
-            buffer[idx].position.X = (float)(random.NextDouble() * 10 - 5) / 100 + 3f;
-            buffer[idx].position.Y = (float)(random.NextDouble() * 10 - 5) / 100 + 2f;
-            buffer[idx].velocity.X = -0.05f;
-            //particles[idx].velocity.X = (float)(rnd.NextDouble() * 10 - 5) / 20;
-            //particles[idx].velocity.Y = (float)(rnd.NextDouble() * 10 - 5) / 20;
+            buffer[idx].position.X = (float)(random.NextDouble() * 10 - 5) / 300 + 3f;
+            buffer[idx].position.Y = (float)(random.NextDouble() * 10 - 5) / 300 + 2f;
+            //buffer[idx].velocity.X = -0.05f;
+            buffer[idx].velocity.X = (float)(random.NextDouble() * 10 - 5) / 150 + 0.15f;
+            buffer[idx].velocity.Y = (float)(random.NextDouble() * 10 - 5) / 150;
             buffer[idx].color.X = 1.0f;
             buffer[idx].color.Y = 1.0f;
             buffer[idx].color.Z = 1.0f;
@@ -65,21 +65,20 @@ namespace GravityParticles.Models
 
         public void ChangeParticlesCount(int newParticleCount)
         {
-            var newParticles = new Particle[newParticleCount];
-            for(int i=0; i<newParticleCount; i++)
+            lock (this)
             {
-                if (i < particles.Length)
-                    newParticles[i] = particles[i];
-                else
-                    SetupParticle(newParticles, i);
-            }
+                var newParticles = new Particle[newParticleCount];
+                for(int i=0; i<newParticleCount; i++)
+                {
+                    if (i < particles.Length)
+                        newParticles[i] = particles[i];
+                    else
+                        SetupParticle(newParticles, i);
+                }
 
-            lock(this)
-            {
                 particles = newParticles;
                 shaderConfig.particleCount = newParticleCount;
             }
-
         }
 
         private Random random = new Random(123);
