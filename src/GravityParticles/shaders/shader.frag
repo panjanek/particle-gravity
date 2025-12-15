@@ -18,7 +18,7 @@ void main()
             outputColor = vec4(1.0, 1.0, 1.0, 1);
     }
     else if (vColor.r == 3) {
-        outputColor = vec4(0.3, 0.3, 0.3,0.5);
+        outputColor = vec4(0.5, 0.5, 0.5,0.7);
     } else {
         //this is good with GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.One);
         float alpha = smoothstep(1.0, 0.0, r);

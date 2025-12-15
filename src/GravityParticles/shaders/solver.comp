@@ -43,12 +43,6 @@ layout(std430, binding = 1) buffer OutputBuffer {
     Particle points[];
 };
 
-// buffer containing init data, used for mode=1
-layout(std430, binding = 2) readonly buffer InitParticles
-{
-    Particle initPoints[];
-};
-
 
 const float M_PI        = 3.14159265358979323846;
 const float CONSTANT_G  = 0.1;
@@ -142,8 +136,21 @@ float rand(uint seed)
     seed ^= seed >> 15;
     seed *= 0x31848babU;
     seed ^= seed >> 14;
-
     return float(seed) * (1.0 / 4294967296.0);
+}
+
+void init_randomly(uint idx)
+{
+    uint seed = idx << 2;
+    float r = config.initR * (rand(seed)-0.5);
+    float angle = rand(seed+1) * 2 * M_PI;
+    points[idx].position.x = config.initPos.x + r * sin(angle);
+    points[idx].position.y = config.initPos.y + r * cos(angle);
+
+    r = config.initVR * (rand(seed+2)-0.5);
+    angle = rand(seed+3) * 2 * M_PI;
+    points[idx].velocity.x = config.initVel.x + r * sin(angle);
+    points[idx].velocity.y = config.initVel.y + r * cos(angle);
 }
 
 void main()
@@ -153,19 +160,17 @@ void main()
 
     if (idx >=0 && idx < config.particleCount) {
         if (config.mode == 0) {
+
             update_one(idx);
             add_color(idx);
-        } else if (config.mode == 1) {
-            //points[idx] = initPoints[idx];
 
-            uint seed = idx << 2;
-            points[idx].position.x = config.initPos.x + config.initR*(rand(seed)-0.5) / 300.0;
-            points[idx].position.y = config.initPos.y + config.initR*(rand(seed+1)-0.5) / 300.0;
-            points[idx].velocity.x = 0.15 + (10*rand(seed+2)-5) / 150.0;
-            points[idx].velocity.y = 0.00 + (10*rand(seed+3)-5) / 150.0;
+        } else if (config.mode == 1) {
+
+            init_randomly(idx);
 
             for(int t=0; t<config.steps; t++)
                 update_one(idx);
+
             add_color(idx);
         }
     } else if (idx < config.particleCount + config.massCount) {
@@ -179,7 +184,7 @@ void main()
         uint initIdx = config.particleCount + config.massCount;
         points[initIdx].position = config.initPos;
         points[initIdx].color.r = 3;
-        points[initIdx].color.g = 0;
+        points[initIdx].color.g = config.initR;
         points[initIdx].color.b = 0;
     }
 }

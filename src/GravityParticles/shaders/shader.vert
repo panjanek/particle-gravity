@@ -25,7 +25,7 @@ void main()
     if (points[id].color.r == 2) {
         gl_PointSize = 15.0;
     } else if (points[id].color.r == 3) {
-        gl_PointSize = 35.0;
+        gl_PointSize = 10+points[id].color.g*100;
     }
 
     vColor = points[id].color.rgb; 

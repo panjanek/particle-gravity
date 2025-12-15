@@ -41,7 +41,9 @@ namespace GravityParticles.Models
             shaderConfig.steps = 500;
             zoom = 100;
             shaderConfig.initPos = new Vector2(3, 2);
-            shaderConfig.initR = 10;
+            shaderConfig.initR = 0.03f;
+            shaderConfig.initVel = new Vector2(0.15f, 0);
+            shaderConfig.initVR = 0.06f;
 
             particles = new Particle[shaderConfig.particleCount];
             for(int i=0; i< shaderConfig.particleCount; i++)

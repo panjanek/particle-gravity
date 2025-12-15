@@ -43,8 +43,6 @@ namespace GravityParticles.Gui
 
         private int pointsBuffer;
 
-        private int initBuffer;
-
         private int dummyVao;
 
         private int projLocation;
@@ -139,6 +137,19 @@ namespace GravityParticles.Gui
             var pos = new Vector2(e.X, e.Y);
             float zoomRatio = (float)(1.0 + ZoomingSpeed * e.Delta);
 
+            if ((Control.MouseButtons & MouseButtons.Middle) != 0)
+            {  
+                var initRegionPixelCoord = GuiUtil.ProjectToScreen(scene.shaderConfig.initPos, projectionMatrix, glControl.Width, glControl.Height);
+                if (GuiUtil.IsInSquare(pos, initRegionPixelCoord, 10))
+                {
+                    zoomRatio = (float)(1.0 + ZoomingSpeed * e.Delta * 10);
+                    scene.shaderConfig.initR *= zoomRatio;
+                    if (scene.shaderConfig.initR < 0.00001)
+                        scene.shaderConfig.initR = 0.00001f;
+                    return;
+                }
+            }
+
             var topLeft1 = GuiUtil.ScreenToWorld(new Vector2(0,0), projectionMatrix, glControl.Width, glControl.Height);
             var bottomRight1 = GuiUtil.ScreenToWorld(new Vector2(glControl.Width, glControl.Height), projectionMatrix, glControl.Width, glControl.Height);
             var zoomCenter = GuiUtil.ScreenToWorld(pos, projectionMatrix, glControl.Width, glControl.Height);
@@ -227,17 +238,6 @@ namespace GravityParticles.Gui
             //upload initial data
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, pointsBuffer);
             GL.BufferSubData(BufferTarget.ShaderStorageBuffer, 0, scene.shaderConfig.particleCount * shaderPointStrideSize, scene.particles);
-
-            // create buffer for initial particle data
-            if (initBuffer > 0)
-            {
-                GL.DeleteBuffer(initBuffer);
-                initBuffer = 0;
-            }
-            GL.GenBuffers(1, out initBuffer);
-            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, initBuffer);
-            GL.BufferData(BufferTarget.ShaderStorageBuffer, scene.shaderConfig.particleCount * Marshal.SizeOf<Particle>(), scene.particles, BufferUsageHint.StaticDraw);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, initBuffer);
 
             GL.Viewport(0, 0, glControl.Width, glControl.Height);
             glControl.Invalidate();
