@@ -1,0 +1,155 @@
+﻿#version 430
+
+#pragma optimize(on)
+
+layout(local_size_x = {LocalSizeX}) in;
+
+struct ComputeShaderConfig {
+    int massCount;
+    int particleCount;
+    int mode;
+    int steps;
+    float dt;
+    float constantG;
+    float sigma2;
+    float clampVel;
+    float clampAcc;
+    float mass[16];
+    float position_x[16];
+    float position_y[16];
+};
+
+
+struct Particle
+{
+    vec2 position;
+    vec2 velocity;
+    float mass;
+    float _pad0;
+    vec4 color;
+};
+
+// input buffer - only configuration
+layout(std430, binding = 0) buffer ConfigBuffer {
+    ComputeShaderConfig config;
+};
+
+// buffer containing point positions
+layout(std430, binding = 1) buffer OutputBuffer {
+    Particle points[];
+};
+
+// buffer containing init data, used for mode=1
+layout(std430, binding = 2) readonly buffer InitParticles
+{
+    Particle initPoints[];
+};
+
+
+const float M_PI        = 3.14159265358979323846;
+const float CONSTANT_G  = 0.1;
+
+
+float fast_atan2(float y, float x)
+{
+    float ax = abs(x);
+    float ay = abs(y);
+
+    float m = min(ax, ay) / max(ax, ay);
+    float s = m * m;
+
+    float a = (((-0.04649647 * s + 0.15931422) * s - 0.32762277) * s * m + m);
+
+    a = (ay > ax) ? (1.57079637 - a) : a;
+    a = (x < 0.0) ? (3.14159274 - a) : a;
+
+    return a * sign(y);
+}
+
+vec3 hue_to_rgb(float h)
+{
+    vec3 c = vec3(h, 1.0, 1.0);
+    vec3 rgb = clamp(
+        abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0,
+        0.0,
+        1.0
+    );
+
+    return c.z * mix(vec3(1.0), rgb, c.y);
+}
+
+void update_one(uint idx)
+{
+    vec2 pos = points[idx].position;
+    vec2 vel = points[idx].velocity;
+
+    vec2 acc = vec2(0.0);
+
+    // accumulate acceleration
+    for (int i = 0; i < config.massCount; i++)
+    {
+        vec2 d = vec2(config.position_x[i], config.position_y[i]) - pos;
+
+        float r2 = dot(d, d) + config.sigma2;
+        float invR = inversesqrt(r2);
+        float invR3 = invR * invR * invR;
+
+        acc += d * invR3;
+    }
+
+    acc *= CONSTANT_G;
+
+    // --- clamp acceleration (squared) ---
+    float acc2 = dot(acc, acc);
+    float maxAcc2 = config.clampAcc * config.clampAcc;
+
+    acc *= inversesqrt(max(acc2, maxAcc2)) * config.clampAcc;
+
+    // integrate velocity
+    vel += acc * config.dt;
+
+    // --- clamp velocity (squared) ---
+    float vel2 = dot(vel, vel);
+    float maxVel2 = config.clampVel * config.clampVel;
+
+    vel *= inversesqrt(max(vel2, maxVel2)) * config.clampVel;
+
+    // integrate position
+    pos += vel * config.dt;
+
+    // write back once
+    points[idx].position = pos;
+    points[idx].velocity = vel;
+}
+
+void add_color(uint idx)
+{
+    float angle = atan(points[idx].velocity.y, points[idx].velocity.x);
+    float h = (angle + M_PI) / (2 * M_PI);
+    points[idx].color.rgb = hue_to_rgb(h);
+}
+
+void main()
+{
+
+    uint idx = gl_GlobalInvocationID.x;
+
+    if (idx >=0 && idx < config.particleCount) {
+        if (config.mode == 0) {
+            update_one(idx);
+            add_color(idx);
+        } else if (config.mode == 1) {
+            points[idx] = initPoints[idx];
+            for(int t=0; t<config.steps; t++)
+                update_one(idx);
+            add_color(idx);
+        }
+    } else if (idx < config.particleCount + config.massCount) {
+        uint coeffIdx = idx - config.particleCount;
+        points[config.particleCount + coeffIdx].position.x = config.position_x[coeffIdx];
+        points[config.particleCount + coeffIdx].position.y = config.position_y[coeffIdx];
+        points[config.particleCount + coeffIdx].color.r = 255;
+        points[config.particleCount + coeffIdx].color.g = 255;
+        points[config.particleCount + coeffIdx].color.b = 255;
+    }
+}
