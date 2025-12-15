@@ -22,7 +22,7 @@ namespace GravityParticles.Models
             shaderConfig.clampAcc = 1.0f;
 
             // masses
-            for(int i=0; i<16; i++)
+            for (int i=0; i<16; i++)
             {
                 shaderConfig.mass[i] = 1.0f;
                 shaderConfig.position_x[i] = (float)(1.5 * Math.Sin(i * 2 * Math.PI / 16));
@@ -40,6 +40,8 @@ namespace GravityParticles.Models
             shaderConfig.mode = 1;
             shaderConfig.steps = 500;
             zoom = 100;
+            shaderConfig.initPos = new Vector2(3, 2);
+            shaderConfig.initR = 10;
 
             particles = new Particle[shaderConfig.particleCount];
             for(int i=0; i< shaderConfig.particleCount; i++)

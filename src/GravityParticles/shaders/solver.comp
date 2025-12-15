@@ -14,6 +14,10 @@ struct ComputeShaderConfig {
     float sigma2;
     float clampVel;
     float clampAcc;
+    vec2 initPos;
+    vec2 initVel;
+    float initR;
+    float initVR;
     float mass[16];
     float position_x[16];
     float position_y[16];
@@ -129,6 +133,19 @@ void add_color(uint idx)
     points[idx].color.rgb = hue_to_rgb(h);
 }
 
+float rand(uint seed)
+{
+    seed ^= seed >> 17;
+    seed *= 0xed5ad4bbU;
+    seed ^= seed >> 11;
+    seed *= 0xac4c1b51U;
+    seed ^= seed >> 15;
+    seed *= 0x31848babU;
+    seed ^= seed >> 14;
+
+    return float(seed) * (1.0 / 4294967296.0);
+}
+
 void main()
 {
 
@@ -139,7 +156,14 @@ void main()
             update_one(idx);
             add_color(idx);
         } else if (config.mode == 1) {
-            points[idx] = initPoints[idx];
+            //points[idx] = initPoints[idx];
+
+            uint seed = idx << 2;
+            points[idx].position.x = config.initPos.x + config.initR*(rand(seed)-0.5) / 300.0;
+            points[idx].position.y = config.initPos.y + config.initR*(rand(seed+1)-0.5) / 300.0;
+            points[idx].velocity.x = 0.15 + (10*rand(seed+2)-5) / 150.0;
+            points[idx].velocity.y = 0.00 + (10*rand(seed+3)-5) / 150.0;
+
             for(int t=0; t<config.steps; t++)
                 update_one(idx);
             add_color(idx);
@@ -148,8 +172,14 @@ void main()
         uint coeffIdx = idx - config.particleCount;
         points[config.particleCount + coeffIdx].position.x = config.position_x[coeffIdx];
         points[config.particleCount + coeffIdx].position.y = config.position_y[coeffIdx];
-        points[config.particleCount + coeffIdx].color.r = 255;
-        points[config.particleCount + coeffIdx].color.g = 255;
-        points[config.particleCount + coeffIdx].color.b = 255;
+        points[config.particleCount + coeffIdx].color.r = 2;
+        points[config.particleCount + coeffIdx].color.g = 0;
+        points[config.particleCount + coeffIdx].color.b = 0;
+    } else if (idx == config.particleCount + config.massCount) {
+        uint initIdx = config.particleCount + config.massCount;
+        points[initIdx].position = config.initPos;
+        points[initIdx].color.r = 3;
+        points[initIdx].color.g = 0;
+        points[initIdx].color.b = 0;
     }
 }

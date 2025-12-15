@@ -7,19 +7,19 @@ void main()
 {
     vec2 uv = gl_PointCoord * 2.0 - 1.0; 
     float r = length(uv); 
+    if (r > 1.0)
+        discard;
 
-    if (vColor.r >= 255) {
-        if (r > 1.0)
-            discard;
+    if (vColor.r == 2) {
+
         if (r < 0.5) 
             outputColor = vec4(1.0, 0.0, 0.0, 1.0);
         else
-            outputColor = vec4(vColor, 1);
+            outputColor = vec4(1.0, 1.0, 1.0, 1);
     }
-    else {
-        if (r > 1.0)
-            discard;
-
+    else if (vColor.r == 3) {
+        outputColor = vec4(0.3, 0.3, 0.3,0.5);
+    } else {
         //this is good with GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.One);
         float alpha = smoothstep(1.0, 0.0, r);
         alpha = alpha*alpha;

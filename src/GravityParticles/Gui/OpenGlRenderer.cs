@@ -27,6 +27,8 @@ namespace GravityParticles.Gui
 
         private int? draggedMassIdx;
 
+        private bool draggedInitRegion; 
+
         private readonly int ubo;
 
         private readonly int maxGroupsX;
@@ -94,13 +96,22 @@ namespace GravityParticles.Gui
             glControl.MouseWheel += GlControl_MouseWheel;
             var dragging = new DraggingHandler(glControl, mousePos =>
             {
-                for(int i=0; i<scene.shaderConfig.massCount; i++)
+                var initRegionPixelCoord = GuiUtil.ProjectToScreen(scene.shaderConfig.initPos, projectionMatrix, glControl.Width, glControl.Height);
+                if (GuiUtil.IsInSquare(mousePos, initRegionPixelCoord, 10))
+                {
+                    draggedMassIdx = null;
+                    draggedInitRegion = true;
+                    return true;
+                }
+
+                for (int i=0; i<scene.shaderConfig.massCount; i++)
                 {
                     var massPosition = new Vector2(scene.shaderConfig.position_x[i], scene.shaderConfig.position_y[i]);
                     var massPixelCoord = GuiUtil.ProjectToScreen(massPosition, projectionMatrix, glControl.Width, glControl.Height);
                     if (GuiUtil.IsInSquare(mousePos, massPixelCoord, 10))
                     {
                         draggedMassIdx = i;
+                        draggedInitRegion = false;
                         return true;
                     }
                 }
@@ -110,7 +121,9 @@ namespace GravityParticles.Gui
             {
                 var delta = (curr - prev) / scene.zoom;
                 delta.Y = -delta.Y;
-                if (draggedMassIdx.HasValue)
+                if (draggedInitRegion)
+                    scene.shaderConfig.initPos = new Vector2(scene.shaderConfig.initPos.X + delta.X, scene.shaderConfig.initPos.Y + delta.Y);
+                else if (draggedMassIdx.HasValue)
                 {
                     scene.shaderConfig.position_x[draggedMassIdx.Value] = scene.shaderConfig.position_x[draggedMassIdx.Value] + delta.X;
                     scene.shaderConfig.position_y[draggedMassIdx.Value] = scene.shaderConfig.position_y[draggedMassIdx.Value] + delta.Y;
@@ -118,7 +131,7 @@ namespace GravityParticles.Gui
                 else
                     scene.center -= delta;
                
-            }, () => { draggedMassIdx = null; });
+            }, () => { draggedMassIdx = null; draggedInitRegion = false; });
         }
 
         private void GlControl_MouseWheel(object? sender, MouseEventArgs e)
@@ -169,7 +182,7 @@ namespace GravityParticles.Gui
             this.scene = scene;
             lock (scene)
             {
-                if (pointsCount == 0 || pointsCount != scene.shaderConfig.particleCount + scene.shaderConfig.massCount)
+                if (pointsCount == 0 || pointsCount != scene.shaderConfig.particleCount + scene.shaderConfig.massCount + 1)
                     SetupBuffers();
 
                 //upload config
@@ -207,7 +220,7 @@ namespace GravityParticles.Gui
             }
             GL.GenBuffers(1, out pointsBuffer);
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, pointsBuffer);
-            pointsCount = scene.shaderConfig.particleCount + scene.shaderConfig.massCount;
+            pointsCount = scene.shaderConfig.particleCount + scene.shaderConfig.massCount + 1;
             int shaderPointStrideSize = Marshal.SizeOf<Particle>();
             GL.BufferData(BufferTarget.ShaderStorageBuffer, pointsCount * shaderPointStrideSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, pointsBuffer);
