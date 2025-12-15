@@ -1,2 +1,2 @@
-# particle-gravity
-Particle gravity simulations
+# Particle gravity simulations
+Work in progress
