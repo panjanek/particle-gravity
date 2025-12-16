@@ -185,6 +185,6 @@ void main()
         points[initIdx].position = config.initPos;
         points[initIdx].color.r = 3;
         points[initIdx].color.g = config.initR;
-        points[initIdx].color.b = 0;
+        points[initIdx].color.b = atan(config.initVel.y, config.initVel.x);
     }
 }

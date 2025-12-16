@@ -27,7 +27,9 @@ namespace GravityParticles.Gui
 
         private int? draggedMassIdx;
 
-        private bool draggedInitRegion; 
+        private bool draggedInitRegion;
+
+        private bool draggedInitVelocity;
 
         private readonly int ubo;
 
@@ -92,35 +94,54 @@ namespace GravityParticles.Gui
                 throw new Exception("Uniform 'projection' not found. Shader optimized it out?");
 
             glControl.MouseWheel += GlControl_MouseWheel;
-            var dragging = new DraggingHandler(glControl, mousePos =>
+            var dragging = new DraggingHandler(glControl, (mousePos, isLeft) =>
             {
                 var initRegionPixelCoord = GuiUtil.ProjectToScreen(scene.shaderConfig.initPos, projectionMatrix, glControl.Width, glControl.Height);
-                if (GuiUtil.IsInSquare(mousePos, initRegionPixelCoord, 10))
+                if (isLeft)
                 {
-                    draggedMassIdx = null;
-                    draggedInitRegion = true;
-                    return true;
-                }
-
-                for (int i=0; i<scene.shaderConfig.massCount; i++)
-                {
-                    var massPosition = new Vector2(scene.shaderConfig.position_x[i], scene.shaderConfig.position_y[i]);
-                    var massPixelCoord = GuiUtil.ProjectToScreen(massPosition, projectionMatrix, glControl.Width, glControl.Height);
-                    if (GuiUtil.IsInSquare(mousePos, massPixelCoord, 10))
+                    if (GuiUtil.IsInSquare(mousePos, initRegionPixelCoord, 10))
                     {
-                        draggedMassIdx = i;
-                        draggedInitRegion = false;
+                        draggedMassIdx = null;
+                        draggedInitVelocity = false;
+                        draggedInitRegion = true;
                         return true;
                     }
-                }
 
-                return true;
+                    for (int i = 0; i < scene.shaderConfig.massCount; i++)
+                    {
+                        var massPosition = new Vector2(scene.shaderConfig.position_x[i], scene.shaderConfig.position_y[i]);
+                        var massPixelCoord = GuiUtil.ProjectToScreen(massPosition, projectionMatrix, glControl.Width, glControl.Height);
+                        if (GuiUtil.IsInSquare(mousePos, massPixelCoord, 10))
+                        {
+                            draggedMassIdx = i;
+                            draggedInitRegion = false;
+                            draggedInitVelocity = false;
+                            return true;
+                        }
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    if (GuiUtil.IsInSquare(mousePos, initRegionPixelCoord, 10))
+                    {
+                        draggedMassIdx = null;
+                        draggedInitRegion = false;
+                        draggedInitVelocity = true;
+                        return true;
+                    }
+
+                    return true;
+                }
             }, (prev, curr) =>
             {
                 var delta = (curr - prev) / scene.zoom;
                 delta.Y = -delta.Y;
-                if (draggedInitRegion)
-                    scene.shaderConfig.initPos = new Vector2(scene.shaderConfig.initPos.X + delta.X, scene.shaderConfig.initPos.Y + delta.Y);
+                if (draggedInitVelocity)
+                    scene.shaderConfig.initVel += delta / 10.0f;
+                else if (draggedInitRegion)
+                    scene.shaderConfig.initPos += delta;
                 else if (draggedMassIdx.HasValue)
                 {
                     scene.shaderConfig.position_x[draggedMassIdx.Value] = scene.shaderConfig.position_x[draggedMassIdx.Value] + delta.X;
@@ -129,7 +150,7 @@ namespace GravityParticles.Gui
                 else
                     scene.center -= delta;
                
-            }, () => { draggedMassIdx = null; draggedInitRegion = false; });
+            }, () => { draggedMassIdx = null; draggedInitRegion = false; draggedInitVelocity = false; });
         }
 
         private void GlControl_MouseWheel(object? sender, MouseEventArgs e)

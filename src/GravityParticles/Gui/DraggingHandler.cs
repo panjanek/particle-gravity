@@ -17,7 +17,7 @@ namespace GravityParticles.Gui
 
         private Vector2? previousPoint;
 
-        private Func<Vector2, bool> canDrag;
+        private Func<Vector2, bool, bool> canDrag;
 
         private Action<Vector2, Vector2> dragging;
 
@@ -25,7 +25,7 @@ namespace GravityParticles.Gui
 
         private GLControl glControl;
 
-        public DraggingHandler(GLControl glControl, Func<Vector2, bool> canDrag, Action<Vector2, Vector2> dragging, Action stop)
+        public DraggingHandler(GLControl glControl, Func<Vector2, bool, bool> canDrag, Action<Vector2, Vector2> dragging, Action stop)
         {
             this.canDrag = canDrag;
             this.dragging = dragging;
@@ -39,13 +39,10 @@ namespace GravityParticles.Gui
 
         private void GlControl_MouseUp(object? sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-            {
-                isDragging = false;
-                previousPoint = null;
-                if (stop != null)
-                    stop();
-            }
+            isDragging = false;
+            previousPoint = null;
+            if (stop != null)
+                stop();
         }
 
         private void GlControl_MouseMove(object? sender, MouseEventArgs e)
@@ -61,14 +58,10 @@ namespace GravityParticles.Gui
 
         private void GlControl_MouseDown(object? sender, MouseEventArgs e)
         {
-            var a = e.Location;
-            if (e.Button == MouseButtons.Left)
+            if (canDrag == null || canDrag(PositionToVector(e.Location), e.Button == MouseButtons.Left))
             {
-                if (canDrag == null || canDrag(PositionToVector(e.Location)))
-                {
-                    isDragging = true;
-                    previousPoint = PositionToVector(e.Location);
-                }
+                isDragging = true;
+                previousPoint = PositionToVector(e.Location);
             }
         }
 
