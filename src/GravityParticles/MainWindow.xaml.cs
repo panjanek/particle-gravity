@@ -56,17 +56,30 @@ namespace GravityParticles
             {
                 case Key.Q:
                     if (scene.shaderConfig.particleCount > 10000)
+                    {
                         scene.ChangeParticlesCount(scene.shaderConfig.particleCount - particlesDiv20);
+                        PopupMessage.Show(this, $"Particle count decreased to {scene.shaderConfig.particleCount}");
+                    }
                     break;
                 case Key.W:
-                    scene.ChangeParticlesCount(scene.shaderConfig.particleCount + particlesDiv20);
+                    {
+                        scene.ChangeParticlesCount(scene.shaderConfig.particleCount + particlesDiv20);
+                        PopupMessage.Show(this, $"Particle count increased to {scene.shaderConfig.particleCount}");
+                    }
                     break;
                 case Key.A:
-                    if (scene.shaderConfig.steps > 100)
+                    if (scene.shaderConfig.steps > 100 && scene.shaderConfig.mode == 1)
+                    {
                         scene.shaderConfig.steps -= stepsDiv10;
+                        PopupMessage.Show(this, $"steps : {scene.shaderConfig.steps}");
+                    }
                     break;
                 case Key.S:
-                    scene.shaderConfig.steps += stepsDiv10;
+                    if (scene.shaderConfig.mode == 1)
+                    {
+                        scene.shaderConfig.steps += stepsDiv10;
+                        PopupMessage.Show(this, $"steps : {scene.shaderConfig.steps}");
+                    }
                     break;
                 case Key.Z:
                     if (scene.shaderConfig.massCount > 1)
