@@ -86,12 +86,11 @@ void update_one(uint idx)
     // accumulate acceleration
     for (int i = 0; i < config.massCount; i++)
     {
-        vec2 d = vec2(config.position_x[i], config.position_y[i]) - pos;
-
+        vec2 mass = vec2(config.position_x[i], config.position_y[i]);
+        vec2 d = mass - pos;
         float r2 = dot(d, d) + config.sigma2;
         float invR = inversesqrt(r2);
         float invR3 = invR * invR * invR;
-
         acc += d * invR3;
     }
 
@@ -155,7 +154,6 @@ void init_randomly(uint idx)
 
 void main()
 {
-
     uint idx = gl_GlobalInvocationID.x;
 
     if (idx >=0 && idx < config.particleCount) {
@@ -167,11 +165,12 @@ void main()
         } else if (config.mode == 1) {
 
             init_randomly(idx);
-
-            for(int t=0; t<config.steps; t++)
+            for(int s=0; s<config.steps; s++) { 
                 update_one(idx);
+            }
 
             add_color(idx);
+            //points[idx].color.rgb = vec3(0.2,0.2,0.2);
         }
     } else if (idx < config.particleCount + config.massCount) {
         uint coeffIdx = idx - config.particleCount;

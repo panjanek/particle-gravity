@@ -238,7 +238,7 @@ namespace GravityParticles.Gui
             glControl.Invalidate();
         }
 
-        private void SetupBuffers()
+        public void SetupBuffers()
         {
             // create dummy vao
             GL.GenVertexArrays(1, out dummyVao);

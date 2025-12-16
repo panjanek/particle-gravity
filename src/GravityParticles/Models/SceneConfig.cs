@@ -13,9 +13,9 @@ namespace GravityParticles.Models
         public SceneConfig()
         {
             //particles
-            shaderConfig.particleCount = 100000;
+            shaderConfig.particleCount = 150000;
             
-            shaderConfig.dt = 0.2f;
+            shaderConfig.dt = 0.1f;
             shaderConfig.constantG = 0.1f;
             shaderConfig.sigma2 = 0.1f;
             shaderConfig.clampVel = 1.0f;
@@ -38,33 +38,22 @@ namespace GravityParticles.Models
 
             //mode
             shaderConfig.mode = 1;
-            shaderConfig.steps = 500;
+            shaderConfig.steps = 1000;
             zoom = 100;
             shaderConfig.initPos = new Vector2(3, 2);
             shaderConfig.initR = 0.03f;
             shaderConfig.initVel = new Vector2(0.15f, 0);
             shaderConfig.initVR = 0.06f;
 
-            particles = new Particle[shaderConfig.particleCount];
-            for(int i=0; i< shaderConfig.particleCount; i++)
-            {
-                SetupParticle(particles, i);
-            }
-
-            
+            ResetAll();
         }
 
         private void SetupParticle(Particle[] buffer, int idx)
         {
-            buffer[idx].position.X = (float)(random.NextDouble() * 10 - 5) / 300 + 3f;
-            buffer[idx].position.Y = (float)(random.NextDouble() * 10 - 5) / 300 + 2f;
-            //buffer[idx].velocity.X = -0.05f;
-            buffer[idx].velocity.X = (float)(random.NextDouble() * 10 - 5) / 150 + 0.15f;
-            buffer[idx].velocity.Y = (float)(random.NextDouble() * 10 - 5) / 150;
-            buffer[idx].color.X = 1.0f;
-            buffer[idx].color.Y = 1.0f;
-            buffer[idx].color.Z = 1.0f;
-            buffer[idx].mass = 0.05f;
+            buffer[idx].position.X = (float)(random.NextDouble() - 0.5) * shaderConfig.initR + shaderConfig.initPos.X;
+            buffer[idx].position.Y = (float)(random.NextDouble() - 0.5) * shaderConfig.initR + shaderConfig.initPos.Y;
+            buffer[idx].velocity.X = (float)(random.NextDouble() - 0.5) * shaderConfig.initVR + shaderConfig.initVel.X;
+            buffer[idx].velocity.Y = (float)(random.NextDouble() -0.5) * shaderConfig.initVR + shaderConfig.initVel.Y;
         }
 
         public void ChangeParticlesCount(int newParticleCount)
@@ -82,6 +71,18 @@ namespace GravityParticles.Models
 
                 particles = newParticles;
                 shaderConfig.particleCount = newParticleCount;
+            }
+        }
+
+        public void ResetAll()
+        {
+            lock (this)
+            {
+                particles = new Particle[shaderConfig.particleCount];
+                for (int i = 0; i < particles.Length; i++)
+                {
+                    SetupParticle(particles, i);
+                }
             }
         }
 

@@ -26,8 +26,8 @@ void main()
     } else {
         //actual particle
         float alpha = smoothstep(1.0, 0.0, r);
-        alpha = alpha*alpha;
-        outputColor = vec4(vColor*alpha, alpha);
+        alpha = alpha;
+        outputColor = vec4(vColor*alpha, alpha*0.5);
     }
 
 }

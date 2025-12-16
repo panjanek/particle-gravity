@@ -23,6 +23,8 @@ namespace GravityParticles
 
         private SceneConfig scene;
 
+        private FullscreenWindow fullscreen;
+
         private bool uiPending;
 
         private DateTime lastCheckTime;
@@ -34,10 +36,10 @@ namespace GravityParticles
             scene = new SceneConfig();
         }
 
-        private void placeholder_Loaded(object sender, RoutedEventArgs e)
+        private void parent_Loaded(object sender, RoutedEventArgs e)
         {
             renderer = new OpenGlRenderer(placeholder);
-            placeholder.KeyDown += Placeholder_KeyDown;
+            KeyDown += MainWindow_KeyDown;
             System.Timers.Timer systemTimer = new System.Timers.Timer() { Interval = 10 };
             systemTimer.Elapsed += SystemTimer_Elapsed;
             systemTimer.Start();
@@ -46,7 +48,7 @@ namespace GravityParticles
             infoTimer.Start();
         }
 
-        private void Placeholder_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             int particlesDiv20 = scene.shaderConfig.particleCount / 20;
             int stepsDiv10 = scene.shaderConfig.steps / 50;
@@ -80,6 +82,33 @@ namespace GravityParticles
                 case Key.P:
                     scene.shaderConfig.dt *= 1.1f;
                     break;
+                case Key.M:
+                    scene.shaderConfig.mode = 1 - scene.shaderConfig.mode;
+                    scene.ResetAll();
+                    renderer.SetupBuffers();
+                    break;
+                case Key.F:
+                    ToggleFullscreen();
+                    break;
+            }
+        }
+
+        private void ToggleFullscreen()
+        {
+            if (fullscreen == null)
+            {
+                parent.Children.Remove(placeholder);
+                fullscreen = new FullscreenWindow();
+                fullscreen.KeyDown += MainWindow_KeyDown;
+                fullscreen.ContentHost.Content = placeholder;
+                fullscreen.ShowDialog();
+            }
+            else
+            {
+                fullscreen.ContentHost.Content = null;
+                parent.Children.Add(placeholder);
+                fullscreen.Close();
+                fullscreen = null;
             }
         }
 
