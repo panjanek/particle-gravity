@@ -8,6 +8,8 @@ struct ComputeShaderConfig {
     int massCount;
     int particleCount;
     int mode;
+    int colors;
+    int markersVisible;
     int steps;
     float dt;
     float constantG;
@@ -121,9 +123,13 @@ void update_one(uint idx)
 
 void add_color(uint idx)
 {
-    float angle = atan(points[idx].velocity.y, points[idx].velocity.x);
-    float h = (angle + M_PI) / (2 * M_PI);
-    points[idx].color.rgb = hue_to_rgb(h);
+    if (config.colors == 0) {
+        points[idx].color.rgb = vec3(0.5, 0.5, 0.5);
+    } else {
+        float angle = atan(points[idx].velocity.y, points[idx].velocity.x);
+        float h = (angle + M_PI) / (2 * M_PI);
+        points[idx].color.rgb = hue_to_rgb(h);
+    }
 }
 
 float rand(uint seed)
@@ -176,14 +182,22 @@ void main()
         uint coeffIdx = idx - config.particleCount;
         points[config.particleCount + coeffIdx].position.x = config.position_x[coeffIdx];
         points[config.particleCount + coeffIdx].position.y = config.position_y[coeffIdx];
-        points[config.particleCount + coeffIdx].color.r = 2;
-        points[config.particleCount + coeffIdx].color.g = 0;
-        points[config.particleCount + coeffIdx].color.b = 0;
+        if (config.markersVisible == 1) {
+            points[config.particleCount + coeffIdx].color.r = 2;
+            points[config.particleCount + coeffIdx].color.g = 0;
+            points[config.particleCount + coeffIdx].color.b = 0;
+        } else {
+            points[config.particleCount + coeffIdx].color.rgb = vec3(0,0,0);
+        }
     } else if (idx == config.particleCount + config.massCount) {
         uint initIdx = config.particleCount + config.massCount;
         points[initIdx].position = config.initPos;
-        points[initIdx].color.r = 3;
-        points[initIdx].color.g = config.initR;
-        points[initIdx].color.b = atan(config.initVel.y, config.initVel.x);
+        if (config.markersVisible == 1) {
+            points[initIdx].color.r = 3;
+            points[initIdx].color.g = config.initR;
+            points[initIdx].color.b = atan(config.initVel.y, config.initVel.x);
+        } else {
+            points[initIdx].color.rgb = vec3(0,0,0);
+        }
     }
 }

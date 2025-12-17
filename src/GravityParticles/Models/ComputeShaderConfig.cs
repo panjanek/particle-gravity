@@ -14,24 +14,29 @@ namespace GravityParticles.Models
         [FieldOffset(0)] public int massCount;
         [FieldOffset(4)] public int particleCount;
         [FieldOffset(8)] public int mode;
-        [FieldOffset(12)] public int steps;
+        [FieldOffset(12)] public int colors;
+        [FieldOffset(16)] public int markersVisible;
+        [FieldOffset(20)] public int steps;
 
-        [FieldOffset(16)] public float dt;
-        [FieldOffset(20)] public float constantG;
-        [FieldOffset(24)] public float sigma2;
-        [FieldOffset(28)] public float clampVel;
-        [FieldOffset(32)] public float clampAcc;
+        // ---- floats ----
+        [FieldOffset(24)] public float dt;
+        [FieldOffset(28)] public float constantG;
+        [FieldOffset(32)] public float sigma2;
+        [FieldOffset(36)] public float clampVel;
+        [FieldOffset(40)] public float clampAcc;
 
-        // padding to align vec2 to 8 bytes
-        [FieldOffset(40)] public Vector2 initPos;
-        [FieldOffset(48)] public Vector2 initVel;
+        // ---- vec2 (8-byte aligned) ----
+        // next multiple of 8 after 44 → 48
+        [FieldOffset(48)] public Vector2 initPos;
+        [FieldOffset(56)] public Vector2 initVel;
 
-        [FieldOffset(56)] public float initR;
-        [FieldOffset(60)] public float initVR;
+        // ---- floats ----
+        [FieldOffset(64)] public float initR;
+        [FieldOffset(68)] public float initVR;
 
-        // arrays start at 64
-        [FieldOffset(64)] public fixed float mass[16];
-        [FieldOffset(128)] public fixed float position_x[16];
-        [FieldOffset(192)] public fixed float position_y[16];
+        // ---- arrays (std430 = tightly packed) ----
+        [FieldOffset(72)] public fixed float mass[16];        // 64 bytes
+        [FieldOffset(136)] public fixed float position_x[16];  // 64 bytes
+        [FieldOffset(200)] public fixed float position_y[16];  // 64 bytes
     }
 }

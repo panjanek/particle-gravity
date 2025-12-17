@@ -38,6 +38,8 @@ namespace GravityParticles.Models
 
             //mode
             shaderConfig.mode = 1;
+            shaderConfig.colors = 1;
+            shaderConfig.markersVisible = 1;
             shaderConfig.steps = 1000;
             zoom = 100;
             shaderConfig.initPos = new Vector2(3, 2);

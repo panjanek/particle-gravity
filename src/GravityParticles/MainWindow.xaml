@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GravityParticles"
-        mc:Ignorable="d"
         Title="GravityParticles" Width="Auto" Height="Auto" WindowState ="Maximized" MinWidth="720" MinHeight="576">
 
     <Grid Name="parent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Loaded="parent_Loaded">

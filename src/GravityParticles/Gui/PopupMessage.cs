@@ -14,6 +14,7 @@ namespace GravityParticles.Gui
 {
     public static class PopupMessage
     {
+        private static Window current;
         public static void Show(
             Window owner,
             string message,
@@ -21,6 +22,8 @@ namespace GravityParticles.Gui
         {
             if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
+
+            current?.Close();
 
             var popup = new Window
             {
@@ -58,6 +61,7 @@ namespace GravityParticles.Gui
                 BeginAnimation(popup, displayMilliseconds);
             };
 
+            current = popup;
             popup.Show();
         }
 
@@ -84,7 +88,7 @@ namespace GravityParticles.Gui
                 Duration = TimeSpan.FromMilliseconds(500)
             };
 
-            fadeOut.Completed += (_, __) => popup.Close();
+            fadeOut.Completed += (_, __) => { popup.Close(); current = null; };
 
             var storyboard = new Storyboard();
             storyboard.Children.Add(fadeIn);

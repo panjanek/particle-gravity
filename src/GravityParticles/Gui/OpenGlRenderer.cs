@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Drawing.Imaging;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms.Integration;
@@ -99,7 +100,7 @@ namespace GravityParticles.Gui
                 var initRegionPixelCoord = GuiUtil.ProjectToScreen(scene.shaderConfig.initPos, projectionMatrix, glControl.Width, glControl.Height);
                 if (isLeft)
                 {
-                    if (GuiUtil.IsInSquare(mousePos, initRegionPixelCoord, 10))
+                    if (GuiUtil.IsInSquare(mousePos, initRegionPixelCoord, 20))
                     {
                         draggedMassIdx = null;
                         draggedInitVelocity = false;
@@ -151,6 +152,20 @@ namespace GravityParticles.Gui
                     scene.center -= delta;
                
             }, () => { draggedMassIdx = null; draggedInitRegion = false; draggedInitVelocity = false; });
+
+            placeholder.SizeChanged += Placeholder_SizeChanged;
+        }
+
+        private void Placeholder_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (glControl.Width <= 0 || glControl.Height <= 0)
+                return;
+
+            if (!glControl.Context.IsCurrent)
+                glControl.MakeCurrent();
+
+            GL.Viewport(0, 0, glControl.Width, glControl.Height);
+            glControl.Invalidate();
         }
 
         private void GlControl_MouseWheel(object? sender, MouseEventArgs e)
@@ -218,6 +233,9 @@ namespace GravityParticles.Gui
                     SetupBuffers();
 
                 //upload config
+                int configSizeInBytes = Marshal.SizeOf<ComputeShaderConfig>();
+                //if (configSizeInBytes != 256) 
+                //    throw new Exception($"Invalid UBO memory layout: size is {configSizeInBytes}, should be 256");
                 GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
                 GL.BufferSubData(
                     BufferTarget.ShaderStorageBuffer,
@@ -273,6 +291,40 @@ namespace GravityParticles.Gui
             var ortho = Matrix4.CreateOrthographicOffCenter(-w, w, -h, h, -1f, 1f);
             var matrix = translate * ortho;
             return matrix;
+        }
+
+        public void SaveToFile(string fileName)
+        {
+            glControl.MakeCurrent();
+            int width = glControl.Width;
+            int height = glControl.Height;
+            byte[] pixels = new byte[width * height * 4];
+
+            GL.ReadPixels(
+                0, 0,
+                width, height,
+                OpenTK.Graphics.OpenGL.PixelFormat.Bgra,
+                PixelType.UnsignedByte,
+                pixels
+            );
+
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                pixels[i + 3] = 255;   // force A = 255 for BGRA
+            }
+
+            using (Bitmap bmp = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            {
+                var data = bmp.LockBits(
+                    new Rectangle(0, 0, width, height),
+                    ImageLockMode.WriteOnly,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb
+                );
+
+                System.Runtime.InteropServices.Marshal.Copy(pixels, 0, data.Scan0, pixels.Length);
+                bmp.UnlockBits(data);
+                bmp.Save(fileName, ImageFormat.Png);
+            }
         }
     }
 }
