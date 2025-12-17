@@ -118,6 +118,7 @@ namespace GravityParticles
                 case Key.M:
                     scene.shaderConfig.mode = 1 - scene.shaderConfig.mode;
                     PopupMessage.Show(this, scene.shaderConfig.mode == 0 ? "Simulation mode" : "Attractor mode");
+                    if (scene.shaderConfig.mode == 1) renderer.Paused = false;
                     scene.ResetAll();
                     renderer.SetupBuffers();
                     break;
@@ -131,6 +132,13 @@ namespace GravityParticles
                     break;
                 case Key.F:
                     ToggleFullscreen();
+                    break;
+                case Key.Space:
+                    if (scene.shaderConfig.mode == 0)
+                    {
+                        renderer.Paused = !renderer.Paused;
+                        PopupMessage.Show(this, renderer.Paused ? "paused" : "resumed");
+                    }
                     break;
                 case Key.P:
                     var dialog = new CommonSaveFileDialog { Title = "Select filename to save capture PNG", DefaultExtension = "png" };

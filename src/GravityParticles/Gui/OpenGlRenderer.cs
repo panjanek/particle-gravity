@@ -19,6 +19,8 @@ namespace GravityParticles.Gui
         public const double ZoomingSpeed = 0.0005;
         public int FrameCounter => frameCounter;
 
+        public bool Paused;
+
         private Panel placeholder;
 
         private WindowsFormsHost host;
@@ -115,7 +117,8 @@ namespace GravityParticles.Gui
                                     "\tH   : toggle markers visibility\n"+
                                     "\t+,- : change integration step DT\n"+
                                     "\tA,S : change integration steps count count for attractor mode\n"+
-                                    "\tP   : save capture PNG\n",
+                                    "\tP   : save capture PNG\n"+
+                                    "\tSpc : pause\n",
                                     "GravityParticles");
 
             };
@@ -264,8 +267,6 @@ namespace GravityParticles.Gui
 
                 //upload config
                 int configSizeInBytes = Marshal.SizeOf<ComputeShaderConfig>();
-                //if (configSizeInBytes != 256) 
-                //    throw new Exception($"Invalid UBO memory layout: size is {configSizeInBytes}, should be 256");
                 GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
                 GL.BufferSubData(
                     BufferTarget.ShaderStorageBuffer,
@@ -276,12 +277,15 @@ namespace GravityParticles.Gui
             }
 
             //compute
-            GL.UseProgram(computeProgram);
-            int dispatchGroupsX = (pointsCount + ShaderUtil.LocalSizeX - 1) / ShaderUtil.LocalSizeX;
-            if (dispatchGroupsX > maxGroupsX)
-                dispatchGroupsX = maxGroupsX;
-            GL.DispatchCompute(dispatchGroupsX, 1, 1);
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
+            if (!Paused)
+            {
+                GL.UseProgram(computeProgram);
+                int dispatchGroupsX = (pointsCount + ShaderUtil.LocalSizeX - 1) / ShaderUtil.LocalSizeX;
+                if (dispatchGroupsX > maxGroupsX)
+                    dispatchGroupsX = maxGroupsX;
+                GL.DispatchCompute(dispatchGroupsX, 1, 1);
+                GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
+            }
 
             glControl.Invalidate();
         }
