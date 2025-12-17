@@ -1,11 +1,11 @@
 # Particle gravity simulations
-GPU-accelerated (with compute shader) .NET GUI application (WPF) for visalisation of particles in gravity field of multiple planets.
+GPU-accelerated (with compute shader) .NET GUI application (WPF) for visalisation of particles in gravitation field of multiple planets.
 
 ## Features
  * 1-15 planets
  * Millions of particles
  * Draggable and zoomable
- * Draggable planets and start region
+ * Draggable planets and particle starting region
  * Attractor mode (shows state after fixed number of integration steps depending on the planets positions)
  * simple integrator implemented in compute shader
  * OpenGL rendering
