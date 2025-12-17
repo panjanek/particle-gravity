@@ -9,6 +9,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 using Panel = System.Windows.Controls.Panel;
 
 namespace GravityParticles.Gui
@@ -23,6 +24,8 @@ namespace GravityParticles.Gui
         private WindowsFormsHost host;
 
         private GLControl glControl;
+
+        public System.Windows.Controls.ContextMenu menu;
 
         private SceneConfig scene;
 
@@ -94,7 +97,31 @@ namespace GravityParticles.Gui
             if (projLocation == -1)
                 throw new Exception("Uniform 'projection' not found. Shader optimized it out?");
 
+            menu = new System.Windows.Controls.ContextMenu();
+            var menuHelp = new System.Windows.Controls.MenuItem() { Header = "Help..." };
+            menu.Items.Add(menuHelp);
+            menuHelp.Click += (s, e) =>
+            {
+                GuiUtil.ShowMessage("Mouse:\n" +
+                                    "\tdrag and zoom\n" +
+                                    "\tdrag planets\n" +
+                                    "\tdrag init region\n\n"+
+                                    "Keys:\n" +
+                                    "\tQ,W : change particles count\n"+
+                                    "\t1-9 : change number of plantes\n"+
+                                    "\tM   : switch between simulation mode and attractor mode\n"+
+                                    "\tC   : toggle colors\n"+
+                                    "\tF   : full screen\n"+
+                                    "\tH   : toggle markers visibility\n"+
+                                    "\t+,- : change integration step DT\n"+
+                                    "\tA,S : change integration steps count count for attractor mode\n"+
+                                    "\tP   : save capture PNG\n",
+                                    "GravityParticles");
+
+            };
+
             glControl.MouseWheel += GlControl_MouseWheel;
+            placeholder.SizeChanged += Placeholder_SizeChanged;
             var dragging = new DraggingHandler(glControl, (mousePos, isLeft) =>
             {
                 var initRegionPixelCoord = GuiUtil.ProjectToScreen(scene.shaderConfig.initPos, projectionMatrix, glControl.Width, glControl.Height);
@@ -132,8 +159,13 @@ namespace GravityParticles.Gui
                         draggedInitVelocity = true;
                         return true;
                     }
-
-                    return true;
+                    else
+                    {
+                        menu.PlacementTarget = placeholder;
+                        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+                        menu.IsOpen = true;
+                        return false;
+                    }
                 }
             }, (prev, curr) =>
             {
@@ -152,8 +184,6 @@ namespace GravityParticles.Gui
                     scene.center -= delta;
                
             }, () => { draggedMassIdx = null; draggedInitRegion = false; draggedInitVelocity = false; });
-
-            placeholder.SizeChanged += Placeholder_SizeChanged;
         }
 
         private void Placeholder_SizeChanged(object sender, SizeChangedEventArgs e)

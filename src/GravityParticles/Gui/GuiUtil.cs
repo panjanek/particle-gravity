@@ -113,13 +113,13 @@ namespace GravityParticles.Gui
             );
         }
 
-        public static string ShowInputDialog(string text, string title)
+        public static void ShowMessage(string text, string title)
         {
             // Window
             Window dialog = new Window()
             {
                 Width = 400,
-                Height = 200,
+                Height = 360,
                 Title = title,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ResizeMode = ResizeMode.NoResize,
@@ -131,7 +131,6 @@ namespace GravityParticles.Gui
             StackPanel panel = new StackPanel() { Margin = new Thickness(10) };
 
             TextBlock txt = new TextBlock() { Text = text, Margin = new Thickness(0, 0, 0, 10) };
-            TextBox input = new TextBox() { MinWidth = 200 };
 
             // Buttons
             StackPanel buttonPanel = new StackPanel()
@@ -142,23 +141,19 @@ namespace GravityParticles.Gui
             };
 
             Button ok = new Button() { Content = "OK", Width = 70, Margin = new Thickness(5, 0, 0, 0) };
-            Button cancel = new Button() { Content = "Cancel", Width = 70 };
 
             ok.Click += (s, e) => { dialog.DialogResult = true; dialog.Close(); };
-            cancel.Click += (s, e) => { dialog.DialogResult = false; dialog.Close(); };
 
-            buttonPanel.Children.Add(cancel);
             buttonPanel.Children.Add(ok);
 
             // Compose UI
             panel.Children.Add(txt);
-            panel.Children.Add(input);
             panel.Children.Add(buttonPanel);
 
             dialog.Content = panel;
 
             // Show input dialog
-            return dialog.ShowDialog() == true ? input.Text : null;
+            dialog.ShowDialog();
         }
 
         public static string FormatBigNumber(int value)

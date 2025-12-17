@@ -200,8 +200,8 @@ namespace GravityParticles
                 double fps = frames / timespan.TotalSeconds;
                 Title = $"GravityParticles. " +
                         $"fps:{fps.ToString("0.0")} " +
+                        $"mode:{(scene.shaderConfig.mode == 0 ? "[simulation]" : $"[attractor] steps:{scene.shaderConfig.steps}")} " +
                         $"particles:{scene.shaderConfig.particleCount} " +
-                        $"steps:{scene.shaderConfig.steps} " +
                         $"dt:{scene.shaderConfig.dt.ToString("0.0000")} ";
 
                 lastCheckFrameCount = renderer.FrameCounter;

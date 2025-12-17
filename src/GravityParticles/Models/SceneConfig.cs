@@ -52,10 +52,16 @@ namespace GravityParticles.Models
 
         private void SetupParticle(Particle[] buffer, int idx)
         {
-            buffer[idx].position.X = (float)(random.NextDouble() - 0.5) * shaderConfig.initR + shaderConfig.initPos.X;
-            buffer[idx].position.Y = (float)(random.NextDouble() - 0.5) * shaderConfig.initR + shaderConfig.initPos.Y;
-            buffer[idx].velocity.X = (float)(random.NextDouble() - 0.5) * shaderConfig.initVR + shaderConfig.initVel.X;
-            buffer[idx].velocity.Y = (float)(random.NextDouble() -0.5) * shaderConfig.initVR + shaderConfig.initVel.Y;
+            uint seed = (uint)(idx << 2);
+            float r = shaderConfig.initR * (SimpleRand(seed) - 0.5f);
+            float angle = SimpleRand(seed + 1) * 2 * (float)Math.PI;
+            buffer[idx].position.X = shaderConfig.initPos.X + r * (float)Math.Sin(angle);
+            buffer[idx].position.Y = shaderConfig.initPos.Y + r * (float)Math.Cos(angle);
+
+            r = shaderConfig.initVR * (SimpleRand(seed + 2) - 0.5f);
+            angle = SimpleRand(seed + 3) * 2 * (float)Math.PI;
+            buffer[idx].velocity.X = shaderConfig.initVel.X + r * (float)Math.Sin(angle);
+            buffer[idx].velocity.Y = shaderConfig.initVel.Y + r * (float)Math.Cos(angle);
         }
 
         public void ChangeParticlesCount(int newParticleCount)
@@ -97,5 +103,17 @@ namespace GravityParticles.Models
         public ComputeShaderConfig shaderConfig;
 
         public Particle[] particles;
+
+        private static float SimpleRand(uint seed)
+        {
+            seed ^= seed >> 17;
+            seed *= 0xed5ad4bbU;
+            seed ^= seed >> 11;
+            seed *= 0xac4c1b51U;
+            seed ^= seed >> 15;
+            seed *= 0x31848babU;
+            seed ^= seed >> 14;
+            return (seed) * (1.0f / 4294967296.0f);
+        }
     }
 }
