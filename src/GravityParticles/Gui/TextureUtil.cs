@@ -9,7 +9,7 @@ namespace GravityParticles.Gui
 {
     public static class TextureUtil
     {
-        public static int CreateTexture(int width, int height)
+        public static int CreateRgba32fTexture(int width, int height)
         {
             int plotTex;
             GL.GenTextures(1, out plotTex);
@@ -31,13 +31,29 @@ namespace GravityParticles.Gui
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+            return plotTex;
+        }
 
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+        public static int CreateIntegerTexture(int width, int height)
+        {
+            int plotTex;
+            GL.GenTextures(1, out plotTex);
+            GL.BindTexture(TextureTarget.Texture2D, plotTex);
 
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.R32ui,
+                width,
+                height,
+                0,
+                PixelFormat.RedInteger,   // IMPORTANT
+                PixelType.UnsignedInt,
+                IntPtr.Zero
+            );
 
-            //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 0);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter,  (int)TextureMinFilter.Nearest);
 
             return plotTex;
         }

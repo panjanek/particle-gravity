@@ -54,8 +54,8 @@ layout(std430, binding = 1) buffer OutputBuffer {
     Particle points[];
 };
 
-layout(rgba32f, binding = 2) uniform image2D plotImage;   // rgba32f r32ui uimage2D image2D
-
+// layout(rgba32f, binding = 2) uniform image2D plotImage;   // rgba32f r32ui uimage2D image2D
+layout(r32ui, binding = 2) uniform uimage2D plotImage;
 
 const float M_PI        = 3.14159265358979323846;
 const float CONSTANT_G  = 0.1;
@@ -89,14 +89,32 @@ vec3 hue_to_rgb(float h)
     return c.z * mix(vec3(1.0), rgb, c.y);
 }
 
-void add_point_to_plot(vec2 pos, vec4 color)
+void add_point_to_plot(vec2 pos, uint val)
 {
     vec2 p = (pos - config.plotOrigin) * config.plotZoom;
-    ivec2 px = ivec2( int(p.x) + config.plotWidth / 2 , int(p.y) + config.plotHeight / 2 );
 
-    //imageAtomicAdd(plotImage, px, 1);
-    //vec4 old = imageLoad(plotImage, px);
-    imageStore(plotImage, px, color);
+    ivec2 px = ivec2(
+        int(p.x) + imageSize(plotImage).x / 2,
+        int(p.y) + imageSize(plotImage).y / 2
+    );
+
+    ivec2 size = imageSize(plotImage);
+
+    if (px.x < 0 || px.y < 0 ||
+        px.x >= size.x || px.y >= size.y)
+    {
+        return;
+    }
+    imageAtomicAdd(plotImage, px, val);
+
+
+    /*
+    vec2 p = (pos - config.plotOrigin) * config.plotZoom;
+    ivec2 px = ivec2( int(p.x) + config.plotWidth / 2 , int(p.y) + config.plotHeight / 2 );
+    if (px.x < 0 || px.y < 0 || px.x >= config.plotWidth || px.y >= config.plotHeight)
+        return;
+    imageAtomicAdd(plotImage, px, val);
+    */
 }
 
 
@@ -104,7 +122,7 @@ void update_plot(uint idx)
 {
     Particle p = points[idx];
     if ((p.position.x < 0 && p.prev_pos.x >= 0) || (p.position.x > 0 && p.prev_pos.x <= 0))
-        add_point_to_plot(vec2(p.velocity.y / config.dt, p.position.y), vec4(p.color.r, p.color.g, p.color.b, 0.1));
+        add_point_to_plot(vec2(p.velocity.y / config.dt, p.position.y), 1);
 }
 
 void update_one(uint idx)
