@@ -111,8 +111,19 @@ void add_point_to_plot(vec2 pos, uint val)
 void update_plot(uint idx)
 {
     Particle p = points[idx];
-    if ((p.position.x < 0 && p.prev_pos.x >= 0) || (p.position.x > 0 && p.prev_pos.x <= 0))
-        add_point_to_plot(vec2(p.velocity.y / config.dt, p.position.y), 10);
+    if (config.plot == 1) {
+        if ((p.position.x < 0 && p.prev_pos.x >= 0) || (p.position.x > 0 && p.prev_pos.x <= 0))
+            add_point_to_plot(vec2(p.velocity.y / config.dt, p.position.y), 1);
+    } else if (config.plot == 2) {
+        if ((p.velocity.x < 0 && p.prev_vel.x >= 0) || (p.velocity.x > 0 && p.prev_vel.x <= 0))
+            add_point_to_plot(vec2(p.velocity.y / config.dt, p.position.y), 1);
+    } else if (config.plot == 3) {
+        if ((p.prev_vel.x > p.velocity.x && p.prev_vel.x > p.prevprev_vel.x))
+            add_point_to_plot(p.position * 0.5, 1);
+    } else if (config.plot == 4) {
+        if ((p.prev_vel.x > p.velocity.x && p.prev_vel.x > p.prevprev_vel.x))
+            add_point_to_plot(vec2(p.velocity.y / config.dt, p.position.y), 1);
+    }
 }
 
 void update_one(uint idx)

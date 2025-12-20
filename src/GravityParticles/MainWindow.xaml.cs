@@ -163,7 +163,7 @@ namespace GravityParticles
                     }
                     break;
                 case Key.V:
-                    scene.shaderConfig.plot = (scene.shaderConfig.plot + 1) % 2;
+                    scene.shaderConfig.plot = (scene.shaderConfig.plot + 1) % 5;
                     if (scene.shaderConfig.plot == 1)
                         renderer.PlotFullscreen = false;
                     renderer.ResetPlot();
