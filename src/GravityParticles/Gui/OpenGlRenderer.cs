@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms.Integration;
+using System.Windows.Media.Media3D;
 using GravityParticles.Models;
 using OpenTK.GLControl;
 using OpenTK.Graphics.OpenGL;
@@ -66,7 +67,9 @@ namespace GravityParticles.Gui
 
         private int projLocation;
 
-        private int plotTex;
+        private int plotTexBack;
+
+        private int plotTexFront;
 
         private OpenTK.Mathematics.Matrix4 projectionMatrix;
      
@@ -106,7 +109,8 @@ namespace GravityParticles.Gui
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ubo);
             GL.GetInteger((OpenTK.Graphics.OpenGL.GetIndexedPName)All.MaxComputeWorkGroupCount, 0, out maxGroupsX);
 
-            plotTex = TextureUtil.CreateIntegerTexture(scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight);
+            plotTexBack = TextureUtil.CreateIntegerTexture(scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight);
+            plotTexFront = TextureUtil.CreateIntegerTexture(scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight);
 
             computeProgram = ShaderUtil.CompileAndLinkComputeShader("solver.comp");
             renderProgram = ShaderUtil.CompileAndLinkRenderShader("shader.vert", "shader.frag");
@@ -271,7 +275,7 @@ namespace GravityParticles.Gui
         public void ResetPlot()
         {
             uint zero = 0;
-            GL.ClearTexImage(plotTex, 0, PixelFormat.RedInteger, PixelType.UnsignedInt, ref zero);
+            GL.ClearTexImage(plotTexBack, 0, PixelFormat.RedInteger, PixelType.UnsignedInt, ref zero);
         }
 
         private void GlControl_Paint(object? sender, PaintEventArgs e)
@@ -296,7 +300,7 @@ namespace GravityParticles.Gui
                 GL.Disable(EnableCap.Blend);
                 GL.UseProgram(plotProgram);
                 GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2D, plotTex);
+                GL.BindTexture(TextureTarget.Texture2D, plotTexFront);
                 GL.Uniform1(plotTexLocation, 0);
                 GL.Uniform2(plotOffsetLocation, new Vector2(0.0f, 0.0f));
                 var plotSize = PlotFullscreen ? new Vector2(1.0f, 1.0f) : new Vector2(0.3f, 0.3f);
@@ -334,12 +338,13 @@ namespace GravityParticles.Gui
             if (!Paused)
             {
                 GL.UseProgram(computeProgram);
-                GL.BindImageTexture(2, plotTex, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.R32ui);
+                GL.BindImageTexture(2, plotTexBack, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.R32ui);
                 int dispatchGroupsX = (pointsCount + ShaderUtil.LocalSizeX - 1) / ShaderUtil.LocalSizeX;
                 if (dispatchGroupsX > maxGroupsX)
                     dispatchGroupsX = maxGroupsX;
                 GL.DispatchCompute(dispatchGroupsX, 1, 1);
                 GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit | MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+                GL.CopyImageSubData(plotTexBack, ImageTarget.Texture2D, 0, 0, 0, 0, plotTexFront, ImageTarget.Texture2D, 0, 0, 0, 0, scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight, 1);
             }
 
             glControl.Invalidate();
