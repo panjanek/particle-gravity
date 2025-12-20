@@ -45,6 +45,8 @@ layout(std430, binding = 1) buffer OutputBuffer {
     Particle points[];
 };
 
+layout(rgba32f, binding = 2) uniform image2D plotImage;
+
 
 const float M_PI        = 3.14159265358979323846;
 const float CONSTANT_G  = 0.1;
@@ -76,6 +78,15 @@ vec3 hue_to_rgb(float h)
     );
 
     return c.z * mix(vec3(1.0), rgb, c.y);
+}
+
+void update_plot(uint idx)
+{
+    vec2 p = 500 + points[idx].position * 100;
+    ivec2 px = ivec2(int(p.x),int(p.y));
+    vec4 old = imageLoad(plotImage, px);
+    vec4 add = vec4(0.0001, 0.0001, 0.0001, 1.0);
+    imageStore(plotImage, px, old + add);
 }
 
 void update_one(uint idx)
@@ -119,6 +130,8 @@ void update_one(uint idx)
     // write back once
     points[idx].position = pos;
     points[idx].velocity = vel;
+
+    update_plot(idx);
 }
 
 void add_color(uint idx)
@@ -176,7 +189,6 @@ void main()
             }
 
             add_color(idx);
-            //points[idx].color.rgb = vec3(0.2,0.2,0.2);
         }
     } else if (idx < config.particleCount + config.massCount) {
         uint coeffIdx = idx - config.particleCount;

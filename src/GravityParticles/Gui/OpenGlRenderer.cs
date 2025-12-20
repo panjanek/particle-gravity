@@ -11,6 +11,7 @@ using OpenTK.Windowing.Common;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using Panel = System.Windows.Controls.Panel;
+using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
 
 namespace GravityParticles.Gui
 {
@@ -45,6 +46,14 @@ namespace GravityParticles.Gui
 
         private int renderProgram;
 
+        private int plotProgram;
+
+        private int plotTexLocation;
+
+        private int plotOffsetLocation;
+
+        private int plotSizeLocation;
+
         private int pointsCount;
 
         private int frameCounter;
@@ -55,12 +64,14 @@ namespace GravityParticles.Gui
 
         private int projLocation;
 
+        private int plotTex;
+
         private OpenTK.Mathematics.Matrix4 projectionMatrix;
      
-        public OpenGlRenderer(Panel placeholder)
+        public OpenGlRenderer(Panel placeholder, SceneConfig scene)
         {
             this.placeholder = placeholder;
-            this.placeholder = placeholder;
+            this.scene = scene;
             host = new WindowsFormsHost();
             host.Visibility = Visibility.Visible;
             host.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
@@ -93,11 +104,19 @@ namespace GravityParticles.Gui
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ubo);
             GL.GetInteger((OpenTK.Graphics.OpenGL.GetIndexedPName)All.MaxComputeWorkGroupCount, 0, out maxGroupsX);
 
+            plotTex = TextureUtil.CreateTexture(scene.plotWidth, scene.plotHeight);
+
             computeProgram = ShaderUtil.CompileAndLinkComputeShader("solver.comp");
             renderProgram = ShaderUtil.CompileAndLinkRenderShader("shader.vert", "shader.frag");
+            plotProgram = ShaderUtil.CompileAndLinkRenderShader("plot.vert", "plot.frag");
             projLocation = GL.GetUniformLocation(renderProgram, "projection");
-            if (projLocation == -1)
-                throw new Exception("Uniform 'projection' not found. Shader optimized it out?");
+            if (projLocation == -1) throw new Exception("Uniform 'projection' not found. Shader optimized it out?");
+            plotTexLocation = GL.GetUniformLocation(plotProgram, "plotTex");
+            if (plotTexLocation == -1) throw new Exception("Uniform 'plotTex' not found. Shader optimized it out?");
+            plotOffsetLocation = GL.GetUniformLocation(plotProgram, "offset");
+            if (plotOffsetLocation == -1) throw new Exception("Uniform 'offset' not found. Shader optimized it out?");
+            plotSizeLocation = GL.GetUniformLocation(plotProgram, "size");
+            if (plotSizeLocation == -1) throw new Exception("Uniform 'size' not found. Shader optimized it out?");
 
             menu = new System.Windows.Controls.ContextMenu();
             var menuHelp = new System.Windows.Controls.MenuItem() { Header = "Help..." };
@@ -109,9 +128,9 @@ namespace GravityParticles.Gui
                                     "\tdrag planets\n" +
                                     "\tdrag init region\n\n"+
                                     "Keys:\n" +
-                                    "\tQ,W : change particles count\n"+
-                                    "\t1-9 : change number of plantes\n"+
-                                    "\tM   : switch between simulation mode and attractor mode\n"+
+                                    "\tM   : switch between simulation mode and attractor mode\n" +
+                                    "\t1-9 : change number of plantes\n" +
+                                    "\tQ,W : change particles count\n" +
                                     "\tC   : toggle colors\n"+
                                     "\tF   : full screen\n"+
                                     "\tH   : toggle markers visibility\n"+
@@ -174,18 +193,29 @@ namespace GravityParticles.Gui
             {
                 var delta = (curr - prev) / scene.zoom;
                 delta.Y = -delta.Y;
+                bool configChanged = false;
                 if (draggedInitVelocity)
+                {
                     scene.shaderConfig.initVel += delta / 10.0f;
+                    configChanged = true;
+                }
                 else if (draggedInitRegion)
+                {
                     scene.shaderConfig.initPos += delta;
+                    configChanged = true;
+                }
                 else if (draggedMassIdx.HasValue)
                 {
                     scene.shaderConfig.position_x[draggedMassIdx.Value] = scene.shaderConfig.position_x[draggedMassIdx.Value] + delta.X;
                     scene.shaderConfig.position_y[draggedMassIdx.Value] = scene.shaderConfig.position_y[draggedMassIdx.Value] + delta.Y;
+                    configChanged = true;
                 }
                 else
                     scene.center -= delta;
-               
+
+                if (configChanged)
+                    GL.ClearTexImage(plotTex, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
+
             }, () => { draggedMassIdx = null; draggedInitRegion = false; draggedInitVelocity = false; });
         }
 
@@ -240,6 +270,11 @@ namespace GravityParticles.Gui
         {
             if (scene != null)
             {
+                GL.Enable(EnableCap.ProgramPointSize);
+                GL.Enable(EnableCap.Blend);
+                GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.One);
+                GL.BlendEquation(OpenTK.Graphics.OpenGL.BlendEquationMode.FuncAdd);
+                GL.Enable(EnableCap.PointSprite);
                 GL.Clear(ClearBufferMask.ColorBufferBit);
 
                 GL.UseProgram(renderProgram);
@@ -247,6 +282,18 @@ namespace GravityParticles.Gui
                 projectionMatrix = GetProjectionMatrix();
                 GL.UniformMatrix4(projLocation, false, ref projectionMatrix);
                 GL.DrawArrays(PrimitiveType.Points, 0, pointsCount);
+
+
+                GL.Disable(EnableCap.DepthTest);
+                GL.Disable(EnableCap.Blend);
+
+                GL.UseProgram(plotProgram);
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture2D, plotTex);
+                GL.Uniform1(plotTexLocation, 0);
+                GL.Uniform2(plotOffsetLocation, new Vector2(0.0f, 0.0f));
+                GL.Uniform2(plotSizeLocation, new Vector2(0.3f, 0.3f));
+                GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
 
 
                 glControl.SwapBuffers();
@@ -280,11 +327,13 @@ namespace GravityParticles.Gui
             if (!Paused)
             {
                 GL.UseProgram(computeProgram);
+                GL.BindImageTexture(2, plotTex, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba32f);
                 int dispatchGroupsX = (pointsCount + ShaderUtil.LocalSizeX - 1) / ShaderUtil.LocalSizeX;
                 if (dispatchGroupsX > maxGroupsX)
                     dispatchGroupsX = maxGroupsX;
                 GL.DispatchCompute(dispatchGroupsX, 1, 1);
                 GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
+                GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
             }
 
             glControl.Invalidate();

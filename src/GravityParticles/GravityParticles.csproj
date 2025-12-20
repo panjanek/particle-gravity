@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="shaders\plot.vert" />
+    <EmbeddedResource Include="shaders\plot.frag" />
     <EmbeddedResource Include="shaders\shader.frag" />
     <EmbeddedResource Include="shaders\shader.vert" />
     <EmbeddedResource Include="shaders\solver.comp" />

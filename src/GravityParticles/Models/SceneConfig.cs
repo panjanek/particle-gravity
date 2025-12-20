@@ -104,6 +104,10 @@ namespace GravityParticles.Models
 
         public Particle[] particles;
 
+        public int plotWidth = 1920;
+
+        public int plotHeight = 1080;
+
         private static float SimpleRand(uint seed)
         {
             seed ^= seed >> 17;

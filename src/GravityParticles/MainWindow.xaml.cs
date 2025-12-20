@@ -42,7 +42,7 @@ namespace GravityParticles
 
         private void parent_Loaded(object sender, RoutedEventArgs e)
         {
-            renderer = new OpenGlRenderer(placeholder);
+            renderer = new OpenGlRenderer(placeholder, scene);
             KeyDown += MainWindow_KeyDown;
             System.Timers.Timer systemTimer = new System.Timers.Timer() { Interval = 10 };
             systemTimer.Elapsed += SystemTimer_Elapsed;
@@ -107,11 +107,11 @@ namespace GravityParticles
                         PopupMessage.Show(this, $"planets : {scene.shaderConfig.massCount}");
                     }
                     break;
-                case Key.OemPlus:
+                case Key.OemMinus:
                     scene.shaderConfig.dt *= 0.9f;
                     PopupMessage.Show(this, $"dt = {scene.shaderConfig.dt.ToString("0.000")}");
                     break;
-                case Key.OemMinus:
+                case Key.OemPlus:
                     scene.shaderConfig.dt *= 1.1f;
                     PopupMessage.Show(this, $"dt = {scene.shaderConfig.dt.ToString("0.000")}");
                     break;
@@ -129,6 +129,14 @@ namespace GravityParticles
                 case Key.H:
                     scene.shaderConfig.markersVisible = 1 - scene.shaderConfig.markersVisible;
                     PopupMessage.Show(this, scene.shaderConfig.markersVisible == 1 ? "Planets and init region visible" : "Planets and init region hidden");
+                    break;
+                case Key.R:
+                    if (scene.shaderConfig.mode == 0)
+                    {
+                        PopupMessage.Show(this, $"restarted");
+                        scene.ResetAll();
+                        renderer.SetupBuffers();
+                    }
                     break;
                 case Key.F:
                     ToggleFullscreen();
