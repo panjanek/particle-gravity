@@ -4,6 +4,10 @@ struct Particle
 {
     vec2 position;
     vec2 velocity;
+	vec2 prev_pos;
+	vec2 prev_vel;
+	vec2 prevprev_pos;
+	vec2 prevprev_vel;
     float mass;
     float _pad0;
     vec4 color;

@@ -34,9 +34,15 @@ namespace GravityParticles.Models
         [FieldOffset(64)] public float initR;
         [FieldOffset(68)] public float initVR;
 
+        [FieldOffset(72)] public int plot;
+        [FieldOffset(76)] public int plotWidth;
+        [FieldOffset(80)] public int plotHeight;
+        [FieldOffset(84)] public float plotZoom;
+        [FieldOffset(88)] public Vector2 plotOrigin;
+
         // ---- arrays (std430 = tightly packed) ----
-        [FieldOffset(72)] public fixed float mass[16];        // 64 bytes
-        [FieldOffset(136)] public fixed float position_x[16];  // 64 bytes
-        [FieldOffset(200)] public fixed float position_y[16];  // 64 bytes
+        [FieldOffset(96)] public fixed float mass[16];         // 64 bytes
+        [FieldOffset(160)] public fixed float position_x[16];  // 64 bytes
+        [FieldOffset(224)] public fixed float position_y[16];  // 64 bytes
     }
 }

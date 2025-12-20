@@ -20,6 +20,11 @@ struct ComputeShaderConfig {
     vec2 initVel;
     float initR;
     float initVR;
+    int plot;
+    int plotWidth;
+    int plotHeight;
+    float plotZoom;
+    vec2 plotOrigin;
     float mass[16];
     float position_x[16];
     float position_y[16];
@@ -30,6 +35,10 @@ struct Particle
 {
     vec2 position;
     vec2 velocity;
+	vec2 prev_pos;
+	vec2 prev_vel;
+	vec2 prevprev_pos;
+	vec2 prevprev_vel;
     float mass;
     float _pad0;
     vec4 color;
@@ -45,7 +54,7 @@ layout(std430, binding = 1) buffer OutputBuffer {
     Particle points[];
 };
 
-layout(rgba32f, binding = 2) uniform image2D plotImage;
+layout(r32ui, binding = 2) uniform uimage2D plotImage;   // rgba32f //image2D
 
 
 const float M_PI        = 3.14159265358979323846;
@@ -80,17 +89,33 @@ vec3 hue_to_rgb(float h)
     return c.z * mix(vec3(1.0), rgb, c.y);
 }
 
+void add_point_to_plot(vec2 pos, vec4 color)
+{
+    vec2 p = (pos - config.plotOrigin) * config.plotZoom;
+    ivec2 px = ivec2( int(p.x) + config.plotWidth / 2 , int(p.y) + config.plotHeight / 2 );
+
+    imageAtomicAdd(plotImage, px, 1);
+    //vec4 old = imageLoad(plotImage, px);
+    //imageStore(plotImage, px, old + color);
+}
+
+
 void update_plot(uint idx)
 {
-    vec2 p = 500 + points[idx].position * 100;
-    ivec2 px = ivec2(int(p.x),int(p.y));
-    vec4 old = imageLoad(plotImage, px);
-    vec4 add = vec4(0.0001, 0.0001, 0.0001, 1.0);
-    imageStore(plotImage, px, old + add);
+    Particle p = points[idx];
+    if ((p.position.x < 0 && p.prev_pos.x >= 0) || (p.position.x > 0 && p.prev_pos.x <= 0))
+        add_point_to_plot(vec2(p.velocity.y / config.dt, p.position.y), vec4(p.color.r, p.color.g, p.color.b, 0.1));
 }
 
 void update_one(uint idx)
 {
+    if (config.plot > 0) {
+        points[idx].prevprev_pos = points[idx].prev_pos;
+        points[idx].prevprev_vel = points[idx].prev_vel;
+        points[idx].prev_pos = points[idx].position;
+        points[idx].prev_vel = points[idx].velocity;
+    }
+
     vec2 pos = points[idx].position;
     vec2 vel = points[idx].velocity;
 
@@ -131,7 +156,8 @@ void update_one(uint idx)
     points[idx].position = pos;
     points[idx].velocity = vel;
 
-    update_plot(idx);
+    if (config.plot > 0)
+        update_plot(idx);
 }
 
 void add_color(uint idx)

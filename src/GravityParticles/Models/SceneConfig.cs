@@ -14,7 +14,14 @@ namespace GravityParticles.Models
         {
             //particles
             shaderConfig.particleCount = 150000;
-            
+
+            zoom = 100;
+            shaderConfig.plot = 0;
+            shaderConfig.plotWidth = 1920;
+            shaderConfig.plotHeight = 1080;
+            shaderConfig.plotOrigin = new Vector2(0, 0);
+            shaderConfig.plotZoom = zoom;
+
             shaderConfig.dt = 0.1f;
             shaderConfig.constantG = 0.1f;
             shaderConfig.sigma2 = 0.1f;
@@ -41,7 +48,7 @@ namespace GravityParticles.Models
             shaderConfig.colors = 1;
             shaderConfig.markersVisible = 1;
             shaderConfig.steps = 1000;
-            zoom = 100;
+           
             shaderConfig.initPos = new Vector2(3, 2);
             shaderConfig.initR = 0.03f;
             shaderConfig.initVel = new Vector2(0.15f, 0);
@@ -103,10 +110,6 @@ namespace GravityParticles.Models
         public ComputeShaderConfig shaderConfig;
 
         public Particle[] particles;
-
-        public int plotWidth = 1920;
-
-        public int plotHeight = 1080;
 
         private static float SimpleRand(uint seed)
         {

@@ -119,7 +119,7 @@ namespace GravityParticles.Gui
             Window dialog = new Window()
             {
                 Width = 400,
-                Height = 360,
+                Height = 400,
                 Title = title,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ResizeMode = ResizeMode.NoResize,

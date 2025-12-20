@@ -64,7 +64,9 @@ namespace GravityParticles.Gui
 
         private int projLocation;
 
-        private int plotTex;
+        private int plotTexFront;
+
+        private int plotTexBack;
 
         private OpenTK.Mathematics.Matrix4 projectionMatrix;
      
@@ -104,7 +106,8 @@ namespace GravityParticles.Gui
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ubo);
             GL.GetInteger((OpenTK.Graphics.OpenGL.GetIndexedPName)All.MaxComputeWorkGroupCount, 0, out maxGroupsX);
 
-            plotTex = TextureUtil.CreateTexture(scene.plotWidth, scene.plotHeight);
+            plotTexFront = TextureUtil.CreateTexture(scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight);
+            plotTexBack= TextureUtil.CreateTexture(scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight);
 
             computeProgram = ShaderUtil.CompileAndLinkComputeShader("solver.comp");
             renderProgram = ShaderUtil.CompileAndLinkRenderShader("shader.vert", "shader.frag");
@@ -137,6 +140,7 @@ namespace GravityParticles.Gui
                                     "\t+,- : change integration step DT\n"+
                                     "\tA,S : change integration steps count count for attractor mode\n"+
                                     "\tP   : save capture PNG\n"+
+                                    "\tR   : reset\n" +
                                     "\tSpc : pause\n",
                                     "GravityParticles");
 
@@ -213,8 +217,7 @@ namespace GravityParticles.Gui
                 else
                     scene.center -= delta;
 
-                if (configChanged)
-                    GL.ClearTexImage(plotTex, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
+                if (configChanged) ResetPlot();
 
             }, () => { draggedMassIdx = null; draggedInitRegion = false; draggedInitVelocity = false; });
         }
@@ -266,35 +269,40 @@ namespace GravityParticles.Gui
             scene.zoom = scene.zoom * zoomRatio;
         }
 
+        public void ResetPlot()
+        {
+            GL.ClearTexImage(plotTexBack, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
+        }
+
         private void GlControl_Paint(object? sender, PaintEventArgs e)
         {
             if (scene != null)
             {
+                // draw pointcloud
                 GL.Enable(EnableCap.ProgramPointSize);
                 GL.Enable(EnableCap.Blend);
                 GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.One);
                 GL.BlendEquation(OpenTK.Graphics.OpenGL.BlendEquationMode.FuncAdd);
                 GL.Enable(EnableCap.PointSprite);
                 GL.Clear(ClearBufferMask.ColorBufferBit);
-
                 GL.UseProgram(renderProgram);
                 GL.BindVertexArray(dummyVao);
                 projectionMatrix = GetProjectionMatrix();
                 GL.UniformMatrix4(projLocation, false, ref projectionMatrix);
                 GL.DrawArrays(PrimitiveType.Points, 0, pointsCount);
 
-
+                // draw plot from texture
                 GL.Disable(EnableCap.DepthTest);
                 GL.Disable(EnableCap.Blend);
-
                 GL.UseProgram(plotProgram);
                 GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2D, plotTex);
+                GL.BindTexture(TextureTarget.Texture2D, plotTexFront);
+                //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
                 GL.Uniform1(plotTexLocation, 0);
                 GL.Uniform2(plotOffsetLocation, new Vector2(0.0f, 0.0f));
                 GL.Uniform2(plotSizeLocation, new Vector2(0.3f, 0.3f));
                 GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
-
 
                 glControl.SwapBuffers();
                 frameCounter++;
@@ -327,13 +335,13 @@ namespace GravityParticles.Gui
             if (!Paused)
             {
                 GL.UseProgram(computeProgram);
-                GL.BindImageTexture(2, plotTex, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba32f);
+                GL.BindImageTexture(2, plotTexBack, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba32f);
                 int dispatchGroupsX = (pointsCount + ShaderUtil.LocalSizeX - 1) / ShaderUtil.LocalSizeX;
                 if (dispatchGroupsX > maxGroupsX)
                     dispatchGroupsX = maxGroupsX;
                 GL.DispatchCompute(dispatchGroupsX, 1, 1);
-                GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
-                GL.MemoryBarrier(MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+                GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit | MemoryBarrierFlags.ShaderImageAccessBarrierBit);
+                (plotTexFront, plotTexBack) = (plotTexBack, plotTexFront);
             }
 
             glControl.Invalidate();
@@ -354,7 +362,7 @@ namespace GravityParticles.Gui
             GL.GenBuffers(1, out pointsBuffer);
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, pointsBuffer);
             pointsCount = scene.shaderConfig.particleCount + scene.shaderConfig.massCount + 1;
-            int shaderPointStrideSize = Marshal.SizeOf<Particle>();
+            int shaderPointStrideSize = Marshal.SizeOf<Particle>();;
             GL.BufferData(BufferTarget.ShaderStorageBuffer, pointsCount * shaderPointStrideSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, pointsBuffer);
             //upload initial data

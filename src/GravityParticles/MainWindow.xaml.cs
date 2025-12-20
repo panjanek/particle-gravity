@@ -97,6 +97,7 @@ namespace GravityParticles
                     if (scene.shaderConfig.massCount > 1)
                     {
                         scene.shaderConfig.massCount--;
+                        renderer.ResetPlot();
                         PopupMessage.Show(this, $"planets : {scene.shaderConfig.massCount}");
                     }
                     break;
@@ -104,6 +105,7 @@ namespace GravityParticles
                     if (scene.shaderConfig.massCount < 15)
                     { 
                         scene.shaderConfig.massCount++;
+                        renderer.ResetPlot();
                         PopupMessage.Show(this, $"planets : {scene.shaderConfig.massCount}");
                     }
                     break;
@@ -120,11 +122,13 @@ namespace GravityParticles
                     PopupMessage.Show(this, scene.shaderConfig.mode == 0 ? "Simulation mode" : "Attractor mode");
                     if (scene.shaderConfig.mode == 1) renderer.Paused = false;
                     scene.ResetAll();
+                    renderer.ResetPlot();
                     renderer.SetupBuffers();
                     break;
                 case Key.C:
                     scene.shaderConfig.colors = 1 - scene.shaderConfig.colors;
                     PopupMessage.Show(this, scene.shaderConfig.colors == 0 ? "White particles" : "Particle color depends on velocity direction");
+                    renderer.ResetPlot();
                     break;
                 case Key.H:
                     scene.shaderConfig.markersVisible = 1 - scene.shaderConfig.markersVisible;
@@ -135,6 +139,7 @@ namespace GravityParticles
                     {
                         PopupMessage.Show(this, $"restarted");
                         scene.ResetAll();
+                        renderer.ResetPlot();
                         renderer.SetupBuffers();
                     }
                     break;
@@ -156,6 +161,10 @@ namespace GravityParticles
                         renderer.SaveToFile(dialog.FileName);
                         PopupMessage.Show(this, $"Capture saved to {dialog.FileName}");
                     }
+                    break;
+                case Key.V:
+                    scene.shaderConfig.plot = (scene.shaderConfig.plot + 1) % 2;
+                    renderer.ResetPlot();
                     break;
             }
 
