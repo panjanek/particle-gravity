@@ -18,7 +18,7 @@ namespace GravityParticles.Gui
             GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
-                PixelInternalFormat.R32ui, // accumulation-safe  //R32ui //Rgba32f
+                PixelInternalFormat.Rgba32f, // accumulation-safe  //R32ui //Rgba32f
                 width,
                 height,
                 0,

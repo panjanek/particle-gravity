@@ -54,7 +54,7 @@ layout(std430, binding = 1) buffer OutputBuffer {
     Particle points[];
 };
 
-layout(r32ui, binding = 2) uniform uimage2D plotImage;   // rgba32f //image2D
+layout(rgba32f, binding = 2) uniform image2D plotImage;   // rgba32f r32ui uimage2D image2D
 
 
 const float M_PI        = 3.14159265358979323846;
@@ -94,9 +94,9 @@ void add_point_to_plot(vec2 pos, vec4 color)
     vec2 p = (pos - config.plotOrigin) * config.plotZoom;
     ivec2 px = ivec2( int(p.x) + config.plotWidth / 2 , int(p.y) + config.plotHeight / 2 );
 
-    imageAtomicAdd(plotImage, px, 1);
+    //imageAtomicAdd(plotImage, px, 1);
     //vec4 old = imageLoad(plotImage, px);
-    //imageStore(plotImage, px, old + color);
+    imageStore(plotImage, px, color);
 }
 
 
