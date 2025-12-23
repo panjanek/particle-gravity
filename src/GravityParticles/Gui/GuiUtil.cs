@@ -18,6 +18,7 @@ namespace GravityParticles.Gui
 {
     public static class GuiUtil
     {
+        /*
         private static DpiScale? dpi;
 
         public static DpiScale Dpi
@@ -29,7 +30,7 @@ namespace GravityParticles.Gui
 
                 return dpi.Value;
             }
-        }
+        }*/
         public static void HsvToRgb(int h, out int r, out int g, out int b)
         {
             if (h < 0)

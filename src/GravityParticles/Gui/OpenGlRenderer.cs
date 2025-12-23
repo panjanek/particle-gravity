@@ -296,16 +296,19 @@ namespace GravityParticles.Gui
                 GL.DrawArrays(PrimitiveType.Points, 0, pointsCount);
 
                 // draw plot from texture
-                GL.Disable(EnableCap.DepthTest);
-                GL.Disable(EnableCap.Blend);
-                GL.UseProgram(plotProgram);
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(TextureTarget.Texture2D, plotTexFront);
-                GL.Uniform1(plotTexLocation, 0);
-                GL.Uniform2(plotOffsetLocation, new Vector2(0.0f, 0.0f));
-                var plotSize = PlotFullscreen ? new Vector2(1.0f, 1.0f) : new Vector2(0.3f, 0.3f);
-                GL.Uniform2(plotSizeLocation, plotSize);
-                GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+                if (scene.shaderConfig.plot > 0)
+                {
+                    GL.Disable(EnableCap.DepthTest);
+                    GL.Disable(EnableCap.Blend);
+                    GL.UseProgram(plotProgram);
+                    GL.ActiveTexture(TextureUnit.Texture0);
+                    GL.BindTexture(TextureTarget.Texture2D, plotTexFront);
+                    GL.Uniform1(plotTexLocation, 0);
+                    GL.Uniform2(plotOffsetLocation, new Vector2(0.0f, 0.0f));
+                    var plotSize = PlotFullscreen ? new Vector2(1.0f, 1.0f) : new Vector2(0.3f, 0.3f);
+                    GL.Uniform2(plotSizeLocation, plotSize);
+                    GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+                }
 
                 glControl.SwapBuffers();
                 frameCounter++;
@@ -379,8 +382,8 @@ namespace GravityParticles.Gui
         private Matrix4 GetProjectionMatrix()
         {
             // rescale by windows display scale setting to match WPF coordinates
-            var w = (float)((glControl.Width / GuiUtil.Dpi.DpiScaleX) / scene.zoom) / 2;
-            var h = (float)((glControl.Height / GuiUtil.Dpi.DpiScaleY) / scene.zoom) / 2;
+            var w = (float)((glControl.Width / 1) / scene.zoom) / 2;
+            var h = (float)((glControl.Height / 1) / scene.zoom) / 2;
             var translate = Matrix4.CreateTranslation(-scene.center.X, -scene.center.Y, 0.0f);
             var ortho = Matrix4.CreateOrthographicOffCenter(-w, w, -h, h, -1f, 1f);
             var matrix = translate * ortho;
