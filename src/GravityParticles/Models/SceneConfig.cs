@@ -25,8 +25,8 @@ namespace GravityParticles.Models
             shaderConfig.dt = 0.1f;
             shaderConfig.constantG = 0.1f;
             shaderConfig.sigma2 = 0.1f;
-            shaderConfig.clampVel = 1.0f;
-            shaderConfig.clampAcc = 1.0f;
+            shaderConfig.clampVel = 10000.0f;
+            shaderConfig.clampAcc = 10000.0f;
 
             // masses
             for (int i=0; i<16; i++)

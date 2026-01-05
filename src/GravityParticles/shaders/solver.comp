@@ -126,25 +126,15 @@ void update_plot(uint idx)
     }
 }
 
-void update_one(uint idx)
+vec2 compute_acceleration(Particle p)
 {
-    if (config.plot > 0) {
-        points[idx].prevprev_pos = points[idx].prev_pos;
-        points[idx].prevprev_vel = points[idx].prev_vel;
-        points[idx].prev_pos = points[idx].position;
-        points[idx].prev_vel = points[idx].velocity;
-    }
-
-    vec2 pos = points[idx].position;
-    vec2 vel = points[idx].velocity;
-
     vec2 acc = vec2(0.0);
 
     // accumulate acceleration
     for (int i = 0; i < config.massCount; i++)
     {
         vec2 mass = vec2(config.position_x[i], config.position_y[i]);
-        vec2 d = mass - pos;
+        vec2 d = mass - p.position;
         float r2 = dot(d, d) + config.sigma2;
         float invR = inversesqrt(r2);
         float invR3 = invR * invR * invR;
@@ -156,8 +146,26 @@ void update_one(uint idx)
     // --- clamp acceleration (squared) ---
     float acc2 = dot(acc, acc);
     float maxAcc2 = config.clampAcc * config.clampAcc;
-
     acc *= inversesqrt(max(acc2, maxAcc2)) * config.clampAcc;
+
+    return acc;
+}
+
+void update_one(uint idx)
+{
+    if (config.plot > 0) {
+        points[idx].prevprev_pos = points[idx].prev_pos;
+        points[idx].prevprev_vel = points[idx].prev_vel;
+        points[idx].prev_pos = points[idx].position;
+        points[idx].prev_vel = points[idx].velocity;
+    }
+
+    Particle p = points[idx];
+
+    vec2 acc = compute_acceleration(p);
+    vec2 pos = points[idx].position;
+    vec2 vel = points[idx].velocity;
+
 
     // integrate velocity
     vel += acc * config.dt;
