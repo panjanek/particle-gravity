@@ -126,28 +126,27 @@ void update_plot(uint idx)
     }
 }
 
-vec2 compute_acceleration(Particle p)
+vec2 compute_acceleration(vec2 position)
 {
     vec2 acc = vec2(0.0);
 
-    // accumulate acceleration
     for (int i = 0; i < config.massCount; i++)
     {
-        vec2 mass = vec2(config.position_x[i], config.position_y[i]);
-        vec2 d = mass - p.position;
+        vec2 mass = vec2(config.position_x[i],
+                         config.position_y[i]);
+
+        vec2 d = mass - position;
+
+        // Softening prevents singularities
         float r2 = dot(d, d) + config.sigma2;
+
         float invR = inversesqrt(r2);
         float invR3 = invR * invR * invR;
+
         acc += d * invR3;
     }
 
     acc *= CONSTANT_G;
-
-    // --- clamp acceleration (squared) ---
-    float acc2 = dot(acc, acc);
-    float maxAcc2 = config.clampAcc * config.clampAcc;
-    acc *= inversesqrt(max(acc2, maxAcc2)) * config.clampAcc;
-
     return acc;
 }
 
@@ -162,25 +161,29 @@ void update_one(uint idx)
 
     Particle p = points[idx];
 
-    vec2 acc = compute_acceleration(p);
-    vec2 pos = points[idx].position;
-    vec2 vel = points[idx].velocity;
+    vec2 x = p.position;
+    vec2 v = p.velocity;
 
+    float dt = config.dt;
 
-    // integrate velocity
-    vel += acc * config.dt;
+    // Current acceleration
+    vec2 a = compute_acceleration(x);
 
-    // --- clamp velocity (squared) ---
-    float vel2 = dot(vel, vel);
-    float maxVel2 = config.clampVel * config.clampVel;
-    vel *= inversesqrt(max(vel2, maxVel2)) * config.clampVel;
+    // --- Kick (half step velocity) ---
+    vec2 v_half = v + 0.5 * dt * a;
 
-    // integrate position
-    pos += vel * config.dt;
+    // --- Drift (position) ---
+    vec2 x_new = x + dt * v_half;
 
-    // write back once
-    points[idx].position = pos;
-    points[idx].velocity = vel;
+    // New acceleration
+    vec2 a_new = compute_acceleration(x_new);
+
+    // --- Kick (finish velocity) ---
+    vec2 v_new = v_half + 0.5 * dt * a_new;
+
+    // Write back
+    points[idx].position = x_new;
+    points[idx].velocity = v_new;
 
     if (config.plot > 0)
         update_plot(idx);

@@ -67,6 +67,8 @@ namespace GravityParticles.Models
 
             r = shaderConfig.initVR * (SimpleRand(seed + 2) - 0.5f);
             angle = SimpleRand(seed + 3) * 2 * (float)Math.PI;
+            angle = 0;
+            r = 0;
             buffer[idx].velocity.X = shaderConfig.initVel.X + r * (float)Math.Sin(angle);
             buffer[idx].velocity.Y = shaderConfig.initVel.Y + r * (float)Math.Cos(angle);
         }

@@ -126,15 +126,14 @@ void update_plot(uint idx)
     }
 }
 
-vec2 compute_acceleration(Particle p)
+vec2 compute_acceleration(vec2 position)
 {
     vec2 acc = vec2(0.0);
 
-    // accumulate acceleration
     for (int i = 0; i < config.massCount; i++)
     {
         vec2 mass = vec2(config.position_x[i], config.position_y[i]);
-        vec2 d = mass - p.position;
+        vec2 d = mass - position;
         float r2 = dot(d, d) + config.sigma2;
         float invR = inversesqrt(r2);
         float invR3 = invR * invR * invR;
@@ -142,12 +141,6 @@ vec2 compute_acceleration(Particle p)
     }
 
     acc *= CONSTANT_G;
-
-    // --- clamp acceleration (squared) ---
-    float acc2 = dot(acc, acc);
-    float maxAcc2 = config.clampAcc * config.clampAcc;
-    acc *= inversesqrt(max(acc2, maxAcc2)) * config.clampAcc;
-
     return acc;
 }
 
@@ -162,25 +155,37 @@ void update_one(uint idx)
 
     Particle p = points[idx];
 
-    vec2 acc = compute_acceleration(p);
-    vec2 pos = points[idx].position;
-    vec2 vel = points[idx].velocity;
+    vec2 x = p.position;
+    vec2 v = p.velocity;
 
+    float dt = config.dt;
+    float half_dt = 0.5 * dt;
 
-    // integrate velocity
-    vel += acc * config.dt;
+    // ---- k1 ----
+    vec2 k1_x = v;
+    vec2 k1_v = compute_acceleration(x);
 
-    // --- clamp velocity (squared) ---
-    float vel2 = dot(vel, vel);
-    float maxVel2 = config.clampVel * config.clampVel;
-    vel *= inversesqrt(max(vel2, maxVel2)) * config.clampVel;
+    // ---- k2 ----
+    vec2 k2_x = v + half_dt * k1_v;
+    vec2 k2_v = compute_acceleration(x + half_dt * k1_x);
 
-    // integrate position
-    pos += vel * config.dt;
+    // ---- k3 ----
+    vec2 k3_x = v + half_dt * k2_v;
+    vec2 k3_v = compute_acceleration(x + half_dt * k2_x);
 
-    // write back once
-    points[idx].position = pos;
-    points[idx].velocity = vel;
+    // ---- k4 ----
+    vec2 k4_x = v + dt * k3_v;
+    vec2 k4_v = compute_acceleration(x + dt * k3_x);
+
+    // ---- Final update ----
+    vec2 new_x = x + (dt / 6.0) *
+        (k1_x + 2.0*k2_x + 2.0*k3_x + k4_x);
+
+    vec2 new_v = v + (dt / 6.0) *
+        (k1_v + 2.0*k2_v + 2.0*k3_v + k4_v);
+
+    points[idx].position = new_x;
+    points[idx].velocity = new_v;
 
     if (config.plot > 0)
         update_plot(idx);

@@ -112,7 +112,7 @@ namespace GravityParticles.Gui
             plotTexBack = TextureUtil.CreateIntegerTexture(scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight);
             plotTexFront = TextureUtil.CreateIntegerTexture(scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight);
 
-            computeProgram = ShaderUtil.CompileAndLinkComputeShader("solver.comp");
+            computeProgram = ShaderUtil.CompileAndLinkComputeShader("solver_rk4.comp");
             renderProgram = ShaderUtil.CompileAndLinkRenderShader("shader.vert", "shader.frag");
             plotProgram = ShaderUtil.CompileAndLinkRenderShader("plot.vert", "plot.frag");
             projLocation = GL.GetUniformLocation(renderProgram, "projection");
