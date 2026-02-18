@@ -21,6 +21,8 @@ namespace GravityParticles.Gui
         public const double ZoomingSpeed = 0.0005;
         public int FrameCounter => frameCounter;
 
+        public int recCounter = 0;
+
         public bool Paused;
 
         public bool PlotFullscreen;
@@ -311,6 +313,11 @@ namespace GravityParticles.Gui
                 }
 
                 glControl.SwapBuffers();
+                if (scene.isFullscreen)
+                {
+                    SaveToFile($"C:/tmp/gravity-sim/rec/frame_{recCounter.ToString("00000")}.png");
+                    recCounter++;
+                }
                 frameCounter++;
             }
         }
@@ -327,6 +334,12 @@ namespace GravityParticles.Gui
                     SetupBuffers();
 
                 //upload config
+                scene.t += scene.shaderConfig.dt;
+                var angle = 0.1 + Math.PI / 2 + scene.t * 0.0005;
+                scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Sin(angle));
+                scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
+                scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
+                scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
                 int configSizeInBytes = Marshal.SizeOf<ComputeShaderConfig>();
                 GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
                 GL.BufferSubData(
@@ -389,6 +402,11 @@ namespace GravityParticles.Gui
             var matrix = translate * ortho;
             return matrix;
         }
+
+        //combine PNGs into video:
+        //mp4: ffmpeg -f image2 -framerate 60 -i rec/frame_%05d.png -r 60 -vcodec libx264 -preset veryslow -crf 12 -profile:v high -pix_fmt yuv420p out.mp4 -y
+        //gif: ffmpeg -framerate 60 -ss 2 -i rec/frame_%05d.png -vf "select='not(mod(n,2))',setpts=N/FRAME_RATE/TB" -t 5 -r 20 simple2.gif
+        //cut: ffmpeg -ss 35 -i move-full.mp4 -t 35 -c copy chase-1.mp4
 
         public void SaveToFile(string fileName)
         {

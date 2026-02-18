@@ -185,6 +185,7 @@ namespace GravityParticles
                 fullscreen = new FullscreenWindow();
                 fullscreen.KeyDown += MainWindow_KeyDown;
                 fullscreen.ContentHost.Content = placeholder;
+                scene.isFullscreen = true;
                 fullscreen.ShowDialog();
             }
             else
@@ -193,6 +194,7 @@ namespace GravityParticles
                 parent.Children.Add(placeholder);
                 fullscreen.Close();
                 fullscreen = null;
+                scene.isFullscreen = false;
             }
         }
 

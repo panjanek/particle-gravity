@@ -15,16 +15,16 @@ namespace GravityParticles.Models
             //particles
             shaderConfig.particleCount = 150000;
 
-            zoom = 100;
+            zoom = 300;
             shaderConfig.plot = 0;
             shaderConfig.plotWidth = 1920;
             shaderConfig.plotHeight = 1080;
             shaderConfig.plotOrigin = new Vector2(0, 0);
             shaderConfig.plotZoom = zoom;
 
-            shaderConfig.dt = 0.1f;
+            shaderConfig.dt = 0.2f;
             shaderConfig.constantG = 0.1f;
-            shaderConfig.sigma2 = 0.1f;
+            shaderConfig.sigma2 = 0.1f;// 0.1f;
             shaderConfig.clampVel = 10000.0f;
             shaderConfig.clampAcc = 10000.0f;
 
@@ -35,8 +35,8 @@ namespace GravityParticles.Models
                 shaderConfig.position_x[i] = (float)(1.5 * Math.Sin(i * 2 * Math.PI / 16));
                 shaderConfig.position_y[i] = (float)(1.5 * Math.Cos(i * 2 * Math.PI / 16));
             }
-            shaderConfig.massCount = 3;
-            shaderConfig.position_x[0] = -1;
+            shaderConfig.massCount = 2;
+            shaderConfig.position_x[0] = 0;
             shaderConfig.position_y[0] = 0;
             shaderConfig.position_x[1] = 1;
             shaderConfig.position_y[1] = 0;
@@ -47,12 +47,13 @@ namespace GravityParticles.Models
             shaderConfig.mode = 1;
             shaderConfig.colors = 1;
             shaderConfig.markersVisible = 1;
-            shaderConfig.steps = 1000;
-           
-            shaderConfig.initPos = new Vector2(3, 2);
-            shaderConfig.initR = 0.03f;
-            shaderConfig.initVel = new Vector2(0.15f, 0);
-            shaderConfig.initVR = 0.06f;
+            shaderConfig.steps = 500;
+          
+            shaderConfig.initPos = new Vector2(0.5f, 0.5f);
+            shaderConfig.initR = 0.01f;
+            //shaderConfig.initVel = new Vector2(0.15f, 0);
+            shaderConfig.initVel = new Vector2(0.0f, 0);
+            shaderConfig.initVR = 0.00f;
 
             ResetAll();
         }
@@ -67,8 +68,6 @@ namespace GravityParticles.Models
 
             r = shaderConfig.initVR * (SimpleRand(seed + 2) - 0.5f);
             angle = SimpleRand(seed + 3) * 2 * (float)Math.PI;
-            angle = 0;
-            r = 0;
             buffer[idx].velocity.X = shaderConfig.initVel.X + r * (float)Math.Sin(angle);
             buffer[idx].velocity.Y = shaderConfig.initVel.Y + r * (float)Math.Cos(angle);
         }
@@ -111,7 +110,11 @@ namespace GravityParticles.Models
 
         public ComputeShaderConfig shaderConfig;
 
+        public float t;
+
         public Particle[] particles;
+
+        public bool isFullscreen;
 
         private static float SimpleRand(uint seed)
         {

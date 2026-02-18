@@ -11,6 +11,7 @@ void main()
         discard;
 
     if (vColor.r == 2) {
+        
         // mass marker
         if (r < 0.5) 
             outputColor = vec4(1.0, 0.0, 0.0, 1.0);
@@ -23,6 +24,7 @@ void main()
         vec2 velocityDir = vec2(cos(-alfa),sin(-alfa));
         float velDist = length(uv-velocityDir);
         outputColor = velDist < 0.5 ? vec4(1.0, 0.0, 0.0, 0.7) : vec4(0.5, 0.5, 0.5, 0.5);
+        discard;
     } else {
         //actual particle
         float alpha = smoothstep(1.0, 0.0, r);
