@@ -13,7 +13,16 @@ namespace GravityParticles.Models
         public SceneConfig()
         {
             //particles
-            shaderConfig.particleCount = 150000;
+
+            //animation 0
+            shaderConfig.massCount = 2;
+            shaderConfig.initPos = new Vector2(0.5f, 0.5f);
+            shaderConfig.initR = 0.001f;
+            shaderConfig.particleCount = 10000000;
+            shaderConfig.dt = 0.01f;
+
+
+            shaderConfig.steps = 500;
 
             zoom = 300;
             shaderConfig.plot = 0;
@@ -22,7 +31,7 @@ namespace GravityParticles.Models
             shaderConfig.plotOrigin = new Vector2(0, 0);
             shaderConfig.plotZoom = zoom;
 
-            shaderConfig.dt = 0.2f;
+           
             shaderConfig.constantG = 0.1f;
             shaderConfig.sigma2 = 0.1f;// 0.1f;
             shaderConfig.clampVel = 10000.0f;
@@ -35,7 +44,7 @@ namespace GravityParticles.Models
                 shaderConfig.position_x[i] = (float)(1.5 * Math.Sin(i * 2 * Math.PI / 16));
                 shaderConfig.position_y[i] = (float)(1.5 * Math.Cos(i * 2 * Math.PI / 16));
             }
-            shaderConfig.massCount = 2;
+            
             shaderConfig.position_x[0] = 0;
             shaderConfig.position_y[0] = 0;
             shaderConfig.position_x[1] = 1;
@@ -47,11 +56,9 @@ namespace GravityParticles.Models
             shaderConfig.mode = 1;
             shaderConfig.colors = 1;
             shaderConfig.markersVisible = 1;
-            shaderConfig.steps = 500;
+            
           
-            shaderConfig.initPos = new Vector2(0.5f, 0.5f);
-            shaderConfig.initR = 0.01f;
-            //shaderConfig.initVel = new Vector2(0.15f, 0);
+
             shaderConfig.initVel = new Vector2(0.0f, 0);
             shaderConfig.initVR = 0.00f;
 

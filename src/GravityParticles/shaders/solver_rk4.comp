@@ -233,6 +233,7 @@ void main()
     uint idx = gl_GlobalInvocationID.x;
 
     if (idx >=0 && idx < config.particleCount) {
+
         if (config.mode == 0) {
 
             update_one(idx);
@@ -247,6 +248,7 @@ void main()
 
             add_color(idx);
         }
+
     } else if (idx < config.particleCount + config.massCount) {
         uint coeffIdx = idx - config.particleCount;
         points[config.particleCount + coeffIdx].position.x = config.position_x[coeffIdx];

@@ -23,6 +23,8 @@ namespace GravityParticles.Gui
 
         public int recCounter = 0;
 
+        private int step = 0;
+
         public bool Paused;
 
         public bool PlotFullscreen;
@@ -322,9 +324,34 @@ namespace GravityParticles.Gui
             }
         }
 
+        private void Aimation1()
+        {
+            step++;
+            scene.shaderConfig.mode = (step <= scene.shaderConfig.steps) ? 0 : 1;
+
+            if (scene.shaderConfig.mode == 1 && step >= scene.shaderConfig.steps + 100)
+                scene.t += scene.shaderConfig.dt;
+
+            var angle = 0.2 + Math.PI / 2 + scene.t * 0.0002;
+            scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Sin(angle));
+            scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
+            scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
+            scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
+        }
+
+        private void Aimation0()
+        {
+            scene.shaderConfig.mode = 0;
+            var angle = 0.2 + Math.PI / 2;
+            scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Sin(angle));
+            scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
+            scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
+            scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
+        }
+
         public void Draw(SceneConfig scene)
         {
-            if (Application.Current.MainWindow.WindowState == System.Windows.WindowState.Minimized)
+            if (Application.Current.MainWindow.WindowState == System.Windows.WindowState.Minimized || !scene.isFullscreen)
                 return;
  
             this.scene = scene;
@@ -334,12 +361,9 @@ namespace GravityParticles.Gui
                     SetupBuffers();
 
                 //upload config
-                scene.t += scene.shaderConfig.dt;
-                var angle = 0.1 + Math.PI / 2 + scene.t * 0.0005;
-                scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Sin(angle));
-                scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
-                scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
-                scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
+
+                Aimation0();
+                
                 int configSizeInBytes = Marshal.SizeOf<ComputeShaderConfig>();
                 GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
                 GL.BufferSubData(
