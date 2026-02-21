@@ -14,17 +14,49 @@ namespace GravityParticles.Models
         {
             //particles
 
-            //animation 0
+            //animation 1 : 2 planets, sim
             shaderConfig.massCount = 2;
             shaderConfig.initPos = new Vector2(0.5f, 0.5f);
             shaderConfig.initR = 0.001f;
             shaderConfig.particleCount = 10000000;
             shaderConfig.dt = 0.01f;
+            zoom = 350;
+
+            //animation 2 : 3 planets, sim
+            shaderConfig.massCount = 3;
+            shaderConfig.initPos = new Vector2(0.5f, 1.5f);
+            shaderConfig.initR = 0.001f;
+            shaderConfig.particleCount = 10000000;
+            shaderConfig.dt = 0.01f;
+            zoom = 350;
+
+            //animation 3 : 5 planets rotating, sim
+            shaderConfig.massCount = 5;
+            shaderConfig.initPos = new Vector2(0.25f, -0.25f);
+            shaderConfig.initR = 0.001f;
+            shaderConfig.particleCount = 10000000;
+            shaderConfig.dt = 0.005f;
+            zoom = 350;
+
+            //animation 4 : 2 planets rotating, attractor
+            shaderConfig.massCount = 2;
+            shaderConfig.initPos = new Vector2(0.25f, 1f);
+            shaderConfig.initR = 0.001f;
+            shaderConfig.particleCount = 1000000;
+            shaderConfig.dt = 0.1f;
+            zoom = 350;
+            shaderConfig.steps = 1350;
+
+            //animation 5 : 5 planets rotating, attractor
+            shaderConfig.massCount = 5;
+            shaderConfig.initPos = new Vector2(-0.15f, -0.15f);
+            shaderConfig.initR = 0.001f;
+            shaderConfig.particleCount = 1000000;
+            shaderConfig.dt = 0.1f;
+            zoom = 350;
+            shaderConfig.steps = 850;
 
 
-            shaderConfig.steps = 500;
-
-            zoom = 300;
             shaderConfig.plot = 0;
             shaderConfig.plotWidth = 1920;
             shaderConfig.plotHeight = 1080;

@@ -44,7 +44,7 @@ namespace GravityParticles
         {
             renderer = new OpenGlRenderer(placeholder, scene);
             KeyDown += MainWindow_KeyDown;
-            System.Timers.Timer systemTimer = new System.Timers.Timer() { Interval = 1 };
+            System.Timers.Timer systemTimer = new System.Timers.Timer() { Interval = 10 };
             systemTimer.Elapsed += SystemTimer_Elapsed;
             systemTimer.Start();
             DispatcherTimer infoTimer = new DispatcherTimer() { Interval = TimeSpan.FromSeconds(1.0) };
@@ -182,11 +182,11 @@ namespace GravityParticles
             if (fullscreen == null)
             {
                 parent.Children.Remove(placeholder);
-                fullscreen = new FullscreenWindow();
+                fullscreen = new FullscreenWindow() { Owner = Window.GetWindow(this) };
                 fullscreen.KeyDown += MainWindow_KeyDown;
                 fullscreen.ContentHost.Content = placeholder;
                 scene.isFullscreen = true;
-                fullscreen.ShowDialog();
+                fullscreen.Show();
             }
             else
             {

@@ -326,20 +326,15 @@ namespace GravityParticles.Gui
 
         private void Aimation1()
         {
-            step++;
-            scene.shaderConfig.mode = (step <= scene.shaderConfig.steps) ? 0 : 1;
-
-            if (scene.shaderConfig.mode == 1 && step >= scene.shaderConfig.steps + 100)
-                scene.t += scene.shaderConfig.dt;
-
-            var angle = 0.2 + Math.PI / 2 + scene.t * 0.0002;
+            scene.shaderConfig.mode = 0;
+            var angle = 0.2 + Math.PI / 2;
             scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Sin(angle));
             scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
             scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
             scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
         }
 
-        private void Aimation0()
+        private void Aimation2()
         {
             scene.shaderConfig.mode = 0;
             var angle = 0.2 + Math.PI / 2;
@@ -347,6 +342,59 @@ namespace GravityParticles.Gui
             scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
             scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
             scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
+            scene.shaderConfig.position_x[2] = 0;
+            scene.shaderConfig.position_y[2] = 0;
+        }
+
+        private void Aimation3()
+        {
+            scene.shaderConfig.mode = 0;
+            scene.t += scene.shaderConfig.dt;
+
+            var angle = scene.t * 0.05;
+            scene.shaderConfig.position_x[0] = (float)(1.2 * Math.Sin(angle));
+            scene.shaderConfig.position_y[0] = (float)(1.2 * Math.Cos(angle));
+            scene.shaderConfig.position_x[1] = (float)(1.2 * Math.Sin(angle + 1 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[1] = (float)(1.2 * Math.Cos(angle + 1 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_x[2] = (float)(1.2 * Math.Sin(angle + 2 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[2] = (float)(1.2 * Math.Cos(angle + 2 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_x[3] = (float)(1.2 * Math.Sin(angle + 3 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[3] = (float)(1.2 * Math.Cos(angle + 3 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_x[4] = (float)(1.2 * Math.Sin(angle + 4 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[4] = (float)(1.2 * Math.Cos(angle + 4 * 2 * Math.PI / 5));
+        }
+
+        private void Aimation4()
+        {
+            step++;
+            scene.shaderConfig.mode = (step <= scene.shaderConfig.steps) ? 0 : 1;
+
+            if (scene.shaderConfig.mode == 1 && step >= scene.shaderConfig.steps + 100)
+                scene.t += scene.shaderConfig.dt;
+
+            var angle = Math.PI / 2 + scene.t * 0.00002;
+            scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Sin(angle));
+            scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
+            scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
+            scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
+        }
+
+        private void Aimation5()
+        {
+            scene.shaderConfig.mode = 1;
+            scene.t += scene.shaderConfig.dt;
+
+            var angle = scene.t * 0.001;
+            scene.shaderConfig.position_x[0] = (float)(1.6 * Math.Sin(angle));
+            scene.shaderConfig.position_y[0] = (float)(1.2 * Math.Cos(angle));
+            scene.shaderConfig.position_x[1] = (float)(1.6 * Math.Sin(angle + 1 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[1] = (float)(1.2 * Math.Cos(angle + 1 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_x[2] = (float)(1.6 * Math.Sin(angle + 2 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[2] = (float)(1.2 * Math.Cos(angle + 2 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_x[3] = (float)(1.6 * Math.Sin(angle + 3 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[3] = (float)(1.2 * Math.Cos(angle + 3 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_x[4] = (float)(1.6 * Math.Sin(angle + 4 * 2 * Math.PI / 5));
+            scene.shaderConfig.position_y[4] = (float)(1.2 * Math.Cos(angle + 4 * 2 * Math.PI / 5));
         }
 
         public void Draw(SceneConfig scene)
@@ -362,7 +410,7 @@ namespace GravityParticles.Gui
 
                 //upload config
 
-                Aimation0();
+                Aimation5();
                 
                 int configSizeInBytes = Marshal.SizeOf<ComputeShaderConfig>();
                 GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
@@ -378,16 +426,19 @@ namespace GravityParticles.Gui
             if (!Paused)
             {
                 GL.UseProgram(computeProgram);
-                GL.BindImageTexture(2, plotTexBack, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.R32ui);
+                //GL.BindImageTexture(2, plotTexBack, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.R32ui);
                 int dispatchGroupsX = (pointsCount + ShaderUtil.LocalSizeX - 1) / ShaderUtil.LocalSizeX;
                 if (dispatchGroupsX > maxGroupsX)
                     dispatchGroupsX = maxGroupsX;
                 GL.DispatchCompute(dispatchGroupsX, 1, 1);
                 GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit | MemoryBarrierFlags.ShaderImageAccessBarrierBit);
-                GL.CopyImageSubData(plotTexBack, ImageTarget.Texture2D, 0, 0, 0, 0, plotTexFront, ImageTarget.Texture2D, 0, 0, 0, 0, scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight, 1);
+                //GL.CopyImageSubData(plotTexBack, ImageTarget.Texture2D, 0, 0, 0, 0, plotTexFront, ImageTarget.Texture2D, 0, 0, 0, 0, scene.shaderConfig.plotWidth, scene.shaderConfig.plotHeight, 1);
             }
 
-            glControl.Invalidate();
+            //glControl.Invalidate();
+            GL.Finish();
+            GlControl_Paint(null, null);
+
         }
 
         public void SetupBuffers()
