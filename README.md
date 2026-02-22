@@ -1,6 +1,8 @@
 # Particle gravity simulations
 GPU-accelerated (with compute shader) .NET GUI application (WPF) for visalisation of particles in gravitation field of multiple planets.
 
+Video: https://www.youtube.com/watch?v=_cH8IAhLrM8
+
 ## Features
  * 1-15 planets
  * Millions of particles
