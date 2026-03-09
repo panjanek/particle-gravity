@@ -19,8 +19,10 @@ namespace GravityParticles.Models
             shaderConfig.initPos = new Vector2(0.5f, 0.5f);
             shaderConfig.initR = 0.001f;
             shaderConfig.particleCount = 10000000;
-            shaderConfig.dt = 0.01f;
+            shaderConfig.dt = 0.05f;
             zoom = 350;
+            
+            /*
 
             //animation 2 : 3 planets, sim
             shaderConfig.massCount = 3;
@@ -55,6 +57,7 @@ namespace GravityParticles.Models
             shaderConfig.dt = 0.1f;
             zoom = 350;
             shaderConfig.steps = 850;
+            */
 
 
             shaderConfig.plot = 0;

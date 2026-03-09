@@ -317,7 +317,7 @@ namespace GravityParticles.Gui
                 glControl.SwapBuffers();
                 if (scene.isFullscreen)
                 {
-                    SaveToFile($"C:/tmp/gravity-sim/rec/frame_{recCounter.ToString("00000")}.png");
+                    SaveToFile($"C:/tmp/my-youtube/rec/frame_{recCounter.ToString("00000")}.png");
                     recCounter++;
                 }
                 frameCounter++;
@@ -327,11 +327,11 @@ namespace GravityParticles.Gui
         private void Aimation1()
         {
             scene.shaderConfig.mode = 0;
-            var angle = 0.2 + Math.PI / 2;
-            scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Sin(angle));
-            scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Cos(angle));
-            scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
-            scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
+            var angle = Math.PI / 2 + 0.2;
+            scene.shaderConfig.position_y[0] = (float)(1.5 * Math.Sin(angle));
+            scene.shaderConfig.position_x[0] = (float)(1.5 * Math.Cos(angle));
+            scene.shaderConfig.position_y[1] = (float)(1.5 * Math.Sin(angle + Math.PI));
+            scene.shaderConfig.position_x[1] = (float)(1.5 * Math.Cos(angle + Math.PI));
         }
 
         private void Aimation2()
@@ -410,7 +410,7 @@ namespace GravityParticles.Gui
 
                 //upload config
 
-                Aimation5();
+                Aimation1();
                 
                 int configSizeInBytes = Marshal.SizeOf<ComputeShaderConfig>();
                 GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ubo);
