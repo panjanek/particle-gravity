@@ -19,7 +19,7 @@ namespace GravityParticles.Models
             shaderConfig.initPos = new Vector2(0.5f, 0.5f);
             shaderConfig.initR = 0.001f;
             shaderConfig.particleCount = 10000000;
-            shaderConfig.dt = 0.05f;
+            shaderConfig.dt = 0.01f;
             zoom = 350;
             
             /*
